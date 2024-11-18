@@ -29,4 +29,8 @@
 # Executables
 *.exe
 *.out
+*.inp
 *.app
+
+# VS code folder
+.vscode
