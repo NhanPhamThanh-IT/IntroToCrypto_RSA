@@ -10,485 +10,40 @@ using namespace std;
 
 #define MAX_DIGITS 309
 
-struct BigNum
+struct LargeNumber
 {
-    int Num[MAX_DIGITS] = {};
-    bool negative = false;
+    int digits[MAX_DIGITS] = {};
+    bool is_negative = false;
 };
 
-struct DivResult
+struct DivisionResult
 {
-    BigNum Result;
-    BigNum Remainder;
+    LargeNumber quotient;
+    LargeNumber remainder;
 };
 
-struct ArrayOfArray
+struct LargeNumberArray
 {
-    BigNum Result;
-    BigNum Count;
+    LargeNumber result;
+    LargeNumber count;
 };
 
-class LongNumbers
+class LargeNumberOperations
 {
 public:
-    const int Size2048 = MAX_DIGITS;
-    BigNum StringToArray(string input);
-    BigNum CopyOf(BigNum input);
-    BigNum AddFront(BigNum input, int val);
-    bool EqualZero(BigNum input);
-    BigNum Add(BigNum first, BigNum second);
-    BigNum Sub(BigNum firstOriginal, BigNum second);
-    BigNum Mul(BigNum first, BigNum second);
-    DivResult DivSmall(BigNum first, BigNum second);
-    DivResult DivLarge(BigNum first, BigNum second);
-    BigNum PwrMod(BigNum firstOriginal, BigNum secondOriginal, BigNum Mod);
-    bool IsPrime(BigNum input);
-    BigNum Inverse(BigNum input, BigNum mod);
+    LargeNumber convertStringToLargeNumber(std::string& str);
+    LargeNumber copyLargeNumber(const LargeNumber& number);
+    LargeNumber addLeadingDigit(const LargeNumber& number, int value);
+    bool isEqualToZero(const LargeNumber& number);
+    LargeNumber addLargeNumbers(LargeNumber first, LargeNumber second);
+    LargeNumber subtractLargeNumbers(LargeNumber minuend, LargeNumber subtrahend);
+    LargeNumber multiplyLargeNumbers(LargeNumber first, LargeNumber second);
+    DivisionResult divideBySmallNumber(LargeNumber dividend, LargeNumber divisor);
+    DivisionResult divideByLargeNumber(LargeNumber dividend, LargeNumber divisor);
+    LargeNumber modularExponentiation(const LargeNumber& base, const LargeNumber& exponent, const LargeNumber& modulus);
+    bool IsPrime(LargeNumber input);
+    LargeNumber Inverse(LargeNumber input, LargeNumber mod);
 };
-
-BigNum LongNumbers::StringToArray(string input)
-{
-    BigNum final;
-    bool neg = false;
-    if (input[0] == '-')
-    {
-        neg = true;
-        input.erase(0, 1);
-    }
-    reverse(begin(input), end(input));
-    int val = 0, itr = 1, Out = 0;
-    for (int i = 0; i < input.size(); i++)
-    {
-        val += (input[i] - '0') * itr;
-        itr *= 10;
-        if (itr == 100)
-        {
-            final.Num[Out] = val;
-            Out++;
-            itr = 1;
-            val = 0;
-        }
-    }
-    if (val != 0)
-        final.Num[Out] = val;
-    final.negative = neg;
-    return final;
-}
-
-BigNum LongNumbers::CopyOf(BigNum input)
-{
-    BigNum Result;
-    Result.negative = input.negative;
-    for (int i = 0; i < MAX_DIGITS; i++)
-        Result.Num[i] = input.Num[i];
-    return Result;
-}
-
-BigNum LongNumbers::AddFront(BigNum input, int val)
-{
-    BigNum Result;
-    Result.negative = input.negative;
-    for (int i = 0; i < MAX_DIGITS - 1; i++)
-        Result.Num[i + 1] = input.Num[i];
-    Result.Num[0] = val;
-    return Result;
-}
-
-bool LongNumbers::EqualZero(BigNum input)
-{
-    for (int i = 0; i < Size2048; i++)
-        if (input.Num[i] != 0)
-            return false;
-    return true;
-}
-
-BigNum LongNumbers::Add(BigNum first, BigNum second)
-{
-    if (EqualZero(first))
-        return second;
-    if (EqualZero(second))
-        return first;
-    BigNum Result;
-    int val = 0, carry = 0;
-    bool BothNegative = false;
-    if (first.negative && second.negative)
-        BothNegative = true;
-    else if (first.negative)
-    {
-        first.negative = false;
-        Result = Sub(second, first);
-        return Result;
-    }
-    else if (second.negative)
-    {
-        second.negative = false;
-        Result = Sub(first, second);
-        return Result;
-    }
-    int i = 0;
-    for (i; i < Size2048; i++)
-    {
-        val = (first.Num[i] + second.Num[i] + carry) % 100;
-        carry = (first.Num[i] + second.Num[i] + carry) / 100;
-        Result.Num[i] = val;
-    }
-    if (carry != 0)
-        Result.Num[i] = carry;
-    Result.negative = BothNegative;
-    return Result;
-}
-
-BigNum LongNumbers::Sub(BigNum firstOriginal, BigNum second)
-{
-    if (EqualZero(second))
-        return firstOriginal;
-    if (EqualZero(firstOriginal))
-    {
-        second.negative = true;
-        return second;
-    }
-    BigNum Result, tempResult, first;
-    first = CopyOf(firstOriginal);
-    int val = 0, NextToMe = 0;
-    bool LastNum = false;
-    if (second.negative)
-    {
-        if (first.negative)
-        {
-            first.negative = false;
-            second.negative = false;
-            Result = Sub(second, first);
-            return Result;
-        }
-        else
-        {
-            second.negative = false;
-            Result = Add(first, second);
-            return Result;
-        }
-    }
-    else
-    {
-        if (first.negative)
-        {
-            first.negative = false;
-            second.negative = false;
-            Result = Add(first, second);
-            Result.negative = true;
-            return Result;
-        }
-    }
-    int i = 0;
-    for (i; i < Size2048; i++)
-    {
-        if (LastNum)
-            break;
-        if (first.Num[i] >= second.Num[i])
-        {
-            val = first.Num[i] - second.Num[i];
-            Result.Num[i] = val;
-        }
-        else
-        {
-            if (i == Size2048)
-                LastNum = true;
-            int temp = i;
-            while (temp < MAX_DIGITS - 1)
-            {
-                temp++;
-                NextToMe++;
-                if (first.Num[temp] != 0)
-                {
-                    first.Num[temp] -= 1;
-                    first.Num[i] = first.Num[i] + 100;
-                    NextToMe--;
-                    temp = i + 1;
-                    i--;
-                    while (NextToMe != 0)
-                    {
-                        first.Num[temp] = 99;
-                        NextToMe--;
-                        temp++;
-                        ;
-                    }
-                    break;
-                }
-                else if (first.Num[temp] == 0 && temp == MAX_DIGITS - 1)
-                    LastNum = true;
-            }
-        }
-    }
-    if (LastNum == true)
-    {
-        Result = Sub(second, firstOriginal);
-        Result.negative = true;
-        return Result;
-    }
-    return Result;
-}
-
-BigNum LongNumbers::Mul(BigNum first, BigNum second)
-{
-    BigNum Result;
-    if (EqualZero(first))
-        return first;
-    if (EqualZero(second))
-        return second;
-    int val = 0, carry = 0;
-    bool neg = false;
-    if (first.negative && second.negative)
-    {
-        first.negative = false;
-        second.negative = false;
-    }
-    else if (first.negative)
-    {
-        first.negative = false;
-        neg = true;
-    }
-    else if (second.negative)
-    {
-        second.negative = false;
-        neg = true;
-    }
-    int i, j;
-    for (i = 0; i < Size2048; i++)
-    {
-        BigNum temp;
-        for (j = 0; j < Size2048; j++)
-        {
-            val = ((first.Num[i] * second.Num[j]) + carry) % 100;
-            carry = ((first.Num[i] * second.Num[j]) + carry) / 100;
-            temp.Num[j] += val;
-        }
-        if (i != 0)
-        {
-            for (int k = 308; k != 0; k--)
-                temp.Num[k] = temp.Num[k - i];
-            for (int k = 0; k < i; k++)
-                temp.Num[k] = 0;
-        }
-        Result = Add(Result, temp);
-    }
-    Result.negative = neg;
-    return Result;
-}
-
-DivResult LongNumbers::DivSmall(BigNum first, BigNum second)
-{
-    DivResult Result;
-    if (EqualZero(first))
-    {
-        Result.Result = first;
-        Result.Remainder = first;
-        return Result;
-    }
-    BigNum countArray, One, tempResult = first;
-    One.Num[0] = 1;
-    bool CheckNeg = tempResult.negative;
-    do
-    {
-        tempResult = Sub(tempResult, second);
-        CheckNeg = tempResult.negative;
-        if (countArray.Num[0] != 99)
-            countArray.Num[0] = countArray.Num[0] + 1;
-        else
-            countArray = Add(countArray, One);
-    } while (!CheckNeg);
-    if (countArray.Num[0] != 0)
-    {
-        countArray.Num[0] = countArray.Num[0] - 1;
-        Result.Result = countArray;
-    }
-    else
-        Result.Result = Sub(countArray, One);
-    Result.Remainder = Add(tempResult, second);
-    return Result;
-}
-
-DivResult LongNumbers::DivLarge(BigNum first, BigNum second)
-{
-    DivResult Result, tempResult;
-    BigNum partOffirst, test;
-    if (EqualZero(first))
-    {
-        Result.Result = first;
-        Result.Remainder = first;
-    }
-    bool neg = false;
-    if (first.negative && second.negative)
-    {
-        first.negative = false;
-        second.negative = false;
-    }
-    else if (first.negative)
-    {
-        first.negative = false;
-        neg = true;
-    }
-    else if (second.negative)
-    {
-        second.negative = false;
-        neg = true;
-    }
-    reverse(begin(first.Num), end(first.Num));
-    int i = 0;
-    while (i != 309)
-    {
-        do
-        {
-            partOffirst = AddFront(partOffirst, first.Num[i]);
-            test = Sub(partOffirst, second);
-            i++;
-        } while (test.negative && i != 309);
-        tempResult = DivSmall(partOffirst, second);
-        Result.Result.Num[309 - i] = tempResult.Result.Num[0];
-        partOffirst = tempResult.Remainder;
-    }
-    Result.Remainder = partOffirst;
-    Result.Remainder.negative = neg;
-    Result.Result.negative = neg;
-    return Result;
-}
-
-BigNum LongNumbers::PwrMod(BigNum firstOriginal, BigNum secondOriginal, BigNum Mod)
-{
-    if (EqualZero(firstOriginal))
-        return firstOriginal;
-    if (EqualZero(secondOriginal))
-    {
-        BigNum hop;
-        hop.Num[0] = 1;
-        return hop;
-    }
-    BigNum first = CopyOf(firstOriginal);
-    BigNum second = CopyOf(secondOriginal);
-    stack<ArrayOfArray> memory;
-    ArrayOfArray AoA;
-    BigNum Result, tempResult, Count, tempCount, check, two;
-    DivResult DR;
-    two.Num[0] = 2;
-    tempCount.Num[0] = 1;
-    tempResult = first;
-    Result = first;
-    do
-    {
-        DR = DivLarge(tempResult, Mod);
-        Result = DR.Remainder;
-        Count = tempCount;
-        AoA.Result = Result;
-        AoA.Count = Count;
-        memory.push(AoA);
-        tempCount = Mul(Count, two);
-        tempResult = Mul(Result, Result);
-        check = Sub(second, tempCount);
-    } while (!check.negative);
-    Result = *new BigNum;
-    Result.Num[0] = 1;
-    while (!EqualZero(second))
-    {
-        AoA = memory.top();
-        if (!Sub(second, AoA.Count).negative)
-        {
-            Result = Mul(Result, AoA.Result);
-            DR = DivLarge(Result, Mod);
-            Result = DR.Remainder;
-            second = Sub(second, AoA.Count);
-        }
-        memory.pop();
-    }
-    return Result;
-}
-
-bool LongNumbers::IsPrime(BigNum input)
-{
-    bool Result = false;
-    DivResult DR;
-    BigNum n = CopyOf(input);
-    BigNum One, two, a, NMinusOne, K, tempK, Q, test, Calc, power;
-    One.Num[0] = 1;
-    two.Num[0] = 2;
-    a.Num[0] = 2;
-    if (Sub(n, a).negative)
-        return false;
-    DR = DivLarge(n, two);
-    if (EqualZero(DR.Remainder))
-        return false;
-    NMinusOne = Sub(n, One);
-    do
-    {
-        Q = NMinusOne;
-        K = tempK;
-        DR = DivLarge(NMinusOne, two);
-        NMinusOne = DR.Result;
-        if (K.Num[0] != 99)
-            tempK.Num[0] = K.Num[0] + 1;
-        else
-            tempK = Add(K, One);
-    } while (EqualZero(DR.Remainder));
-    NMinusOne = Sub(n, One);
-    Calc = PwrMod(a, Q, n);
-    DR = DivLarge(Calc, n);
-    if (EqualZero(Sub(DR.Remainder, One)) || EqualZero(Sub(DR.Remainder, NMinusOne)))
-        return true;
-    if (test.Num[0] != 99)
-        test.Num[0] = test.Num[0] + 1;
-    else
-        test = Add(test, One);
-    while (!EqualZero(Sub(K, test)))
-    {
-        Calc = PwrMod(Calc, two, n);
-        DR = DivLarge(Calc, n);
-        if (EqualZero(Sub(DR.Remainder, One)))
-        {
-            Result = false;
-            break;
-        }
-        else if (EqualZero(Sub(DR.Remainder, NMinusOne)))
-        {
-            Result = true;
-            break;
-        }
-        if (test.Num[0] != 99)
-            test.Num[0] = test.Num[0] + 1;
-        else
-            test = Add(test, One);
-    }
-    return Result;
-}
-
-BigNum LongNumbers::Inverse(BigNum input, BigNum mod)
-{
-    BigNum Result, Q, A2, A3, B2, B3, T2, T3, Zero, One, temp;
-    One.Num[0] = 1;
-    A2 = CopyOf(Zero);
-    A3 = CopyOf(mod);
-    B2 = CopyOf(One);
-    B3 = CopyOf(input);
-    while (!EqualZero(B3) && !EqualZero(Sub(B3, One)))
-    {
-        Q = DivLarge(A3, B3).Result;
-        T2 = Sub(A2, Mul(Q, B2));
-        T3 = Sub(A3, Mul(Q, B3));
-        A2 = CopyOf(B2);
-        A3 = CopyOf(B3);
-        B2 = CopyOf(T2);
-        B3 = CopyOf(T3);
-    }
-    if (EqualZero(Sub(B3, One)))
-    {
-        while (B2.negative)
-            B2 = Add(B2, mod);
-        Result = B2;
-        temp = Sub(Result, mod);
-        while (!temp.negative)
-        {
-            Result = temp;
-            temp = Sub(Result, mod);
-        }
-    }
-    return Result;
-}
 
 class BigIntHolder {
     string digits;
@@ -527,6 +82,497 @@ public:
     friend BigIntHolder operator^(BigIntHolder&, const BigIntHolder&);
     friend BigIntHolder sqrt(BigIntHolder& a);
 };
+
+BigIntHolder hexadecimalToDecimal(string hexVal) 
+{
+    int len = hexVal.size();
+    BigIntHolder base("1");
+    BigIntHolder dec_val("0");
+    for (int i = 0; i < len; i++) 
+    {
+        if (hexVal[i] >= '0' && hexVal[i] <= '9')
+        {
+            dec_val += (hexVal[i] - '0') * base;
+            base = base * 16;
+        }
+        else if (hexVal[i] >= 'A' && hexVal[i] <= 'F')
+        {
+            dec_val += (hexVal[i] - '7') * base;
+            base = base * 16;
+        }
+    }
+    return dec_val;
+}
+
+int main(int argc,char**argv)
+{
+    LargeNumberOperations MyNum;
+    string hex ;
+    int ouput;
+    BigIntHolder k;
+    string test_id;
+    if (argc < 3)
+        cout << "Not enough Command Line Argument passed!";
+    else {
+        ifstream inputTest(argv[1]);
+        inputTest >> hex;
+        inputTest.close();
+        k = hexadecimalToDecimal(hex);
+        LargeNumber n;
+        string nStr = k.toString();
+        n = MyNum.convertStringToLargeNumber(nStr);
+        int res;
+        res = MyNum.IsPrime(n);
+        ofstream outputTest(argv[2]);
+        outputTest << res;
+        outputTest.close();
+    }
+    return 0;
+}
+
+LargeNumber LargeNumberOperations::convertStringToLargeNumber(std::string& str)
+{
+    LargeNumber final;
+    bool neg = false;
+    if (str[0] == '-')
+    {
+        neg = true;
+        str.erase(0, 1);
+    }
+    reverse(begin(str), end(str));
+    int val = 0, itr = 1, Out = 0;
+    for (int i = 0; i < str.size(); i++)
+    {
+        val += (str[i] - '0') * itr;
+        itr *= 10;
+        if (itr == 100)
+        {
+            final.digits[Out] = val;
+            Out++;
+            itr = 1;
+            val = 0;
+        }
+    }
+    if (val != 0)
+        final.digits[Out] = val;
+    final.is_negative = neg;
+    return final;
+}
+
+LargeNumber LargeNumberOperations::copyLargeNumber(const LargeNumber& number)
+{
+    LargeNumber Result;
+    Result.is_negative = number.is_negative;
+    for (int i = 0; i < MAX_DIGITS; i++)
+        Result.digits[i] = number.digits[i];
+    return Result;
+}
+
+LargeNumber LargeNumberOperations::addLeadingDigit(const LargeNumber& number, int value)
+{
+    LargeNumber Result;
+    Result.is_negative = number.is_negative;
+    for (int i = 0; i < MAX_DIGITS - 1; i++)
+        Result.digits[i + 1] = number.digits[i];
+    Result.digits[0] = value;
+    return Result;
+}
+
+bool LargeNumberOperations::isEqualToZero(const LargeNumber& number)
+{
+    for (int i = 0; i < MAX_DIGITS; i++)
+        if (number.digits[i] != 0)
+            return false;
+    return true;
+}
+
+LargeNumber LargeNumberOperations::addLargeNumbers(LargeNumber first, LargeNumber second)
+{
+    if (isEqualToZero(first))
+        return second;
+    if (isEqualToZero(second))
+        return first;
+    LargeNumber Result;
+    int val = 0, carry = 0;
+    bool BothNegative = false;
+    if (first.is_negative && second.is_negative)
+        BothNegative = true;
+    else if (first.is_negative)
+    {
+        first.is_negative = false;
+        Result = subtractLargeNumbers(second, first);
+        return Result;
+    }
+    else if (second.is_negative)
+    {
+        second.is_negative = false;
+        Result = subtractLargeNumbers(first, second);
+        return Result;
+    }
+    int i = 0;
+    for (i; i < MAX_DIGITS; i++)
+    {
+        val = (first.digits[i] + second.digits[i] + carry) % 100;
+        carry = (first.digits[i] + second.digits[i] + carry) / 100;
+        Result.digits[i] = val;
+    }
+    if (carry != 0)
+        Result.digits[i] = carry;
+    Result.is_negative = BothNegative;
+    return Result;
+}
+
+LargeNumber LargeNumberOperations::subtractLargeNumbers(LargeNumber minuend, LargeNumber subtrahend)
+{
+    if (isEqualToZero(subtrahend))
+        return minuend;
+    if (isEqualToZero(minuend))
+    {
+        subtrahend.is_negative = true;
+        return subtrahend;
+    }
+    LargeNumber Result, tempResult, first;
+    first = copyLargeNumber(minuend);
+    int val = 0, NextToMe = 0;
+    bool LastNum = false;
+    if (subtrahend.is_negative)
+    {
+        if (first.is_negative)
+        {
+            first.is_negative = false;
+            subtrahend.is_negative = false;
+            Result = subtractLargeNumbers(subtrahend, first);
+            return Result;
+        }
+        else
+        {
+            subtrahend.is_negative = false;
+            Result = addLargeNumbers(first, subtrahend);
+            return Result;
+        }
+    }
+    else
+    {
+        if (first.is_negative)
+        {
+            first.is_negative = false;
+            subtrahend.is_negative = false;
+            Result = addLargeNumbers(first, subtrahend);
+            Result.is_negative = true;
+            return Result;
+        }
+    }
+    int i = 0;
+    for (i; i < MAX_DIGITS; i++)
+    {
+        if (LastNum)
+            break;
+        if (first.digits[i] >= subtrahend.digits[i])
+        {
+            val = first.digits[i] - subtrahend.digits[i];
+            Result.digits[i] = val;
+        }
+        else
+        {
+            if (i == MAX_DIGITS)
+                LastNum = true;
+            int temp = i;
+            while (temp < MAX_DIGITS - 1)
+            {
+                temp++;
+                NextToMe++;
+                if (first.digits[temp] != 0)
+                {
+                    first.digits[temp] -= 1;
+                    first.digits[i] = first.digits[i] + 100;
+                    NextToMe--;
+                    temp = i + 1;
+                    i--;
+                    while (NextToMe != 0)
+                    {
+                        first.digits[temp] = 99;
+                        NextToMe--;
+                        temp++;
+                        ;
+                    }
+                    break;
+                }
+                else if (first.digits[temp] == 0 && temp == MAX_DIGITS - 1)
+                    LastNum = true;
+            }
+        }
+    }
+    if (LastNum == true)
+    {
+        Result = subtractLargeNumbers(subtrahend, minuend);
+        Result.is_negative = true;
+        return Result;
+    }
+    return Result;
+}
+
+LargeNumber LargeNumberOperations::multiplyLargeNumbers(LargeNumber first, LargeNumber second)
+{
+    LargeNumber Result;
+    if (isEqualToZero(first))
+        return first;
+    if (isEqualToZero(second))
+        return second;
+    int val = 0, carry = 0;
+    bool neg = false;
+    if (first.is_negative && second.is_negative)
+    {
+        first.is_negative = false;
+        second.is_negative = false;
+    }
+    else if (first.is_negative)
+    {
+        first.is_negative = false;
+        neg = true;
+    }
+    else if (second.is_negative)
+    {
+        second.is_negative = false;
+        neg = true;
+    }
+    int i, j;
+    for (i = 0; i < MAX_DIGITS; i++)
+    {
+        LargeNumber temp;
+        for (j = 0; j < MAX_DIGITS; j++)
+        {
+            val = ((first.digits[i] * second.digits[j]) + carry) % 100;
+            carry = ((first.digits[i] * second.digits[j]) + carry) / 100;
+            temp.digits[j] += val;
+        }
+        if (i != 0)
+        {
+            for (int k = 308; k != 0; k--)
+                temp.digits[k] = temp.digits[k - i];
+            for (int k = 0; k < i; k++)
+                temp.digits[k] = 0;
+        }
+        Result = addLargeNumbers(Result, temp);
+    }
+    Result.is_negative = neg;
+    return Result;
+}
+
+DivisionResult LargeNumberOperations::divideBySmallNumber(LargeNumber dividend, LargeNumber divisor)
+{
+    DivisionResult Result;
+    if (isEqualToZero(dividend))
+    {
+        Result.quotient = dividend;
+        Result.remainder = dividend;
+        return Result;
+    }
+    LargeNumber countArray, One, tempResult = dividend;
+    One.digits[0] = 1;
+    bool CheckNeg = tempResult.is_negative;
+    do
+    {
+        tempResult = subtractLargeNumbers(tempResult, divisor);
+        CheckNeg = tempResult.is_negative;
+        if (countArray.digits[0] != 99)
+            countArray.digits[0] = countArray.digits[0] + 1;
+        else
+            countArray = addLargeNumbers(countArray, One);
+    } while (!CheckNeg);
+    if (countArray.digits[0] != 0)
+    {
+        countArray.digits[0] = countArray.digits[0] - 1;
+        Result.quotient = countArray;
+    }
+    else
+        Result.quotient = subtractLargeNumbers(countArray, One);
+    Result.remainder = addLargeNumbers(tempResult, divisor);
+    return Result;
+}
+
+DivisionResult LargeNumberOperations::divideByLargeNumber(LargeNumber dividend, LargeNumber divisor)
+{
+    DivisionResult Result, tempResult;
+    LargeNumber partOffirst, test;
+    if (isEqualToZero(dividend))
+    {
+        Result.quotient = dividend;
+        Result.remainder = dividend;
+    }
+    bool neg = false;
+    if (dividend.is_negative && divisor.is_negative)
+    {
+        dividend.is_negative = false;
+        divisor.is_negative = false;
+    }
+    else if (dividend.is_negative)
+    {
+        dividend.is_negative = false;
+        neg = true;
+    }
+    else if (divisor.is_negative)
+    {
+        divisor.is_negative = false;
+        neg = true;
+    }
+    reverse(begin(dividend.digits), end(dividend.digits));
+    int i = 0;
+    while (i != 309)
+    {
+        do
+        {
+            partOffirst = addLeadingDigit(partOffirst, dividend.digits[i]);
+            test = subtractLargeNumbers(partOffirst, divisor);
+            i++;
+        } while (test.is_negative && i != 309);
+        tempResult = divideBySmallNumber(partOffirst, divisor);
+        Result.quotient.digits[309 - i] = tempResult.quotient.digits[0];
+        partOffirst = tempResult.remainder;
+    }
+    Result.remainder = partOffirst;
+    Result.remainder.is_negative = neg;
+    Result.quotient.is_negative = neg;
+    return Result;
+}
+
+LargeNumber LargeNumberOperations::modularExponentiation(const LargeNumber& base, const LargeNumber& exponent, const LargeNumber& modulus)
+{
+    if (isEqualToZero(base))
+        return base;
+    if (isEqualToZero(exponent))
+    {
+        LargeNumber hop;
+        hop.digits[0] = 1;
+        return hop;
+    }
+    LargeNumber first = copyLargeNumber(base);
+    LargeNumber second = copyLargeNumber(exponent);
+    stack<LargeNumberArray> memory;
+    LargeNumberArray AoA;
+    LargeNumber Result, tempResult, Count, tempCount, check, two;
+    DivisionResult DR;
+    two.digits[0] = 2;
+    tempCount.digits[0] = 1;
+    tempResult = first;
+    Result = first;
+    do
+    {
+        DR = divideByLargeNumber(tempResult, modulus);
+        Result = DR.remainder;
+        Count = tempCount;
+        AoA.result = Result;
+        AoA.count = Count;
+        memory.push(AoA);
+        tempCount = multiplyLargeNumbers(Count, two);
+        tempResult = multiplyLargeNumbers(Result, Result);
+        check = subtractLargeNumbers(second, tempCount);
+    } while (!check.is_negative);
+    Result = *new LargeNumber;
+    Result.digits[0] = 1;
+    while (!isEqualToZero(second))
+    {
+        AoA = memory.top();
+        if (!subtractLargeNumbers(second, AoA.count).is_negative)
+        {
+            Result = multiplyLargeNumbers(Result, AoA.result);
+            DR = divideByLargeNumber(Result, modulus);
+            Result = DR.remainder;
+            second = subtractLargeNumbers(second, AoA.count);
+        }
+        memory.pop();
+    }
+    return Result;
+}
+
+bool LargeNumberOperations::IsPrime(LargeNumber input)
+{
+    bool Result = false;
+    DivisionResult DR;
+    LargeNumber n = copyLargeNumber(input);
+    LargeNumber One, two, a, NMinusOne, K, tempK, Q, test, Calc, power;
+    One.digits[0] = 1;
+    two.digits[0] = 2;
+    a.digits[0] = 2;
+    if (subtractLargeNumbers(n, a).is_negative)
+        return false;
+    DR = divideByLargeNumber(n, two);
+    if (isEqualToZero(DR.remainder))
+        return false;
+    NMinusOne = subtractLargeNumbers(n, One);
+    do
+    {
+        Q = NMinusOne;
+        K = tempK;
+        DR = divideByLargeNumber(NMinusOne, two);
+        NMinusOne = DR.quotient;
+        if (K.digits[0] != 99)
+            tempK.digits[0] = K.digits[0] + 1;
+        else
+            tempK = addLargeNumbers(K, One);
+    } while (isEqualToZero(DR.remainder));
+    NMinusOne = subtractLargeNumbers(n, One);
+    Calc = modularExponentiation(a, Q, n);
+    DR = divideByLargeNumber(Calc, n);
+    if (isEqualToZero(subtractLargeNumbers(DR.remainder, One)) || isEqualToZero(subtractLargeNumbers(DR.remainder, NMinusOne)))
+        return true;
+    if (test.digits[0] != 99)
+        test.digits[0] = test.digits[0] + 1;
+    else
+        test = addLargeNumbers(test, One);
+    while (!isEqualToZero(subtractLargeNumbers(K, test)))
+    {
+        Calc = modularExponentiation(Calc, two, n);
+        DR = divideByLargeNumber(Calc, n);
+        if (isEqualToZero(subtractLargeNumbers(DR.remainder, One)))
+        {
+            Result = false;
+            break;
+        }
+        else if (isEqualToZero(subtractLargeNumbers(DR.remainder, NMinusOne)))
+        {
+            Result = true;
+            break;
+        }
+        if (test.digits[0] != 99)
+            test.digits[0] = test.digits[0] + 1;
+        else
+            test = addLargeNumbers(test, One);
+    }
+    return Result;
+}
+
+LargeNumber LargeNumberOperations::Inverse(LargeNumber input, LargeNumber mod)
+{
+    LargeNumber Result, Q, A2, A3, B2, B3, T2, T3, Zero, One, temp;
+    One.digits[0] = 1;
+    A2 = copyLargeNumber(Zero);
+    A3 = copyLargeNumber(mod);
+    B2 = copyLargeNumber(One);
+    B3 = copyLargeNumber(input);
+    while (!isEqualToZero(B3) && !isEqualToZero(subtractLargeNumbers(B3, One)))
+    {
+        Q = divideByLargeNumber(A3, B3).quotient;
+        T2 = subtractLargeNumbers(A2, multiplyLargeNumbers(Q, B2));
+        T3 = subtractLargeNumbers(A3, multiplyLargeNumbers(Q, B3));
+        A2 = copyLargeNumber(B2);
+        A3 = copyLargeNumber(B3);
+        B2 = copyLargeNumber(T2);
+        B3 = copyLargeNumber(T3);
+    }
+    if (isEqualToZero(subtractLargeNumbers(B3, One)))
+    {
+        while (B2.is_negative)
+            B2 = addLargeNumbers(B2, mod);
+        Result = B2;
+        temp = subtractLargeNumbers(Result, mod);
+        while (!temp.is_negative)
+        {
+            Result = temp;
+            temp = subtractLargeNumbers(Result, mod);
+        }
+    }
+    return Result;
+}
 
 BigIntHolder::BigIntHolder(string& s) 
 {
@@ -910,51 +956,4 @@ string BigIntHolder::toString()
     for (int i = this->digits.size() - 1; i >= 0; i--)
          res = res +to_string((short)this->digits[i]);
     return res;
-}
-
-BigIntHolder hexadecimalToDecimal(string hexVal) 
-{
-    int len = hexVal.size();
-    BigIntHolder base("1");
-    BigIntHolder dec_val("0");
-    for (int i = 0; i < len; i++) 
-    {
-        if (hexVal[i] >= '0' && hexVal[i] <= '9')
-        {
-            dec_val += (hexVal[i] - '0') * base;
-            base = base * 16;
-        }
-        else if (hexVal[i] >= 'A' && hexVal[i] <= 'F')
-        {
-            dec_val += (hexVal[i] - '7') * base;
-            base = base * 16;
-        }
-    }
-    return dec_val;
-}
-
-int main(int argc,char**argv)
-{
-    LongNumbers MyNum;
-    string hex ;
-    int ouput;
-    BigIntHolder k;
-    string test_id;
-    if (argc < 3)
-        cout << "Not enough Command Line Argument passed!";
-    else {
-        ifstream inputTest(argv[1]);
-        inputTest >> hex;
-        inputTest.close();
-        k = hexadecimalToDecimal(hex);
-        BigNum n;
-        string nStr = k.toString();
-        n = MyNum.StringToArray(nStr);
-        int res;
-        res = MyNum.IsPrime(n);
-        ofstream outputTest(argv[2]);
-        outputTest << res;
-        outputTest.close();
-    }
-    return 0;
 }
