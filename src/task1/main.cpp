@@ -41,8 +41,7 @@ public:
     DivisionResult divideBySmallNumber(LargeNumber dividend, LargeNumber divisor);
     DivisionResult divideByLargeNumber(LargeNumber dividend, LargeNumber divisor);
     LargeNumber modularExponentiation(const LargeNumber& base, const LargeNumber& exponent, const LargeNumber& modulus);
-    bool IsPrime(LargeNumber input);
-    LargeNumber Inverse(LargeNumber input, LargeNumber mod);
+    bool isPrimeNumber(const LargeNumber& number);
 };
 
 class BigIntHolder {
@@ -67,20 +66,13 @@ public:
     friend BigIntHolder& operator-=(BigIntHolder&, const BigIntHolder&);
     friend BigIntHolder operator-(const BigIntHolder&, const BigIntHolder&);
     friend bool operator==(const BigIntHolder&, const BigIntHolder&);
-    friend bool operator!=(const BigIntHolder&, const BigIntHolder&);
-    friend bool operator>(const BigIntHolder&, const BigIntHolder&);
-    friend bool operator>=(const BigIntHolder&, const BigIntHolder&);
     friend bool operator<(const BigIntHolder&, const BigIntHolder&);
-    friend bool operator<=(const BigIntHolder&, const BigIntHolder&);
     friend BigIntHolder& operator*=(BigIntHolder&, const BigIntHolder&);
     friend BigIntHolder operator*(const BigIntHolder&, const BigIntHolder&);
     friend BigIntHolder& operator/=(BigIntHolder&, const BigIntHolder&);
     friend BigIntHolder operator/(const BigIntHolder&, const BigIntHolder&);
     friend BigIntHolder operator%(const BigIntHolder&, const BigIntHolder&);
     friend BigIntHolder& operator%=(BigIntHolder&, const BigIntHolder&);
-    friend BigIntHolder& operator^=(BigIntHolder&, const BigIntHolder&);
-    friend BigIntHolder operator^(BigIntHolder&, const BigIntHolder&);
-    friend BigIntHolder sqrt(BigIntHolder& a);
 };
 
 BigIntHolder hexadecimalToDecimal(string hexVal) 
@@ -122,7 +114,7 @@ int main(int argc,char**argv)
         string nStr = k.toString();
         n = MyNum.convertStringToLargeNumber(nStr);
         int res;
-        res = MyNum.IsPrime(n);
+        res = MyNum.isPrimeNumber(n);
         ofstream outputTest(argv[2]);
         outputTest << res;
         outputTest.close();
@@ -484,11 +476,11 @@ LargeNumber LargeNumberOperations::modularExponentiation(const LargeNumber& base
     return Result;
 }
 
-bool LargeNumberOperations::IsPrime(LargeNumber input)
+bool LargeNumberOperations::isPrimeNumber(const LargeNumber& number)
 {
     bool Result = false;
     DivisionResult DR;
-    LargeNumber n = copyLargeNumber(input);
+    LargeNumber n = copyLargeNumber(number);
     LargeNumber One, two, a, NMinusOne, K, tempK, Q, test, Calc, power;
     One.digits[0] = 1;
     two.digits[0] = 2;
@@ -537,39 +529,6 @@ bool LargeNumberOperations::IsPrime(LargeNumber input)
             test.digits[0] = test.digits[0] + 1;
         else
             test = addLargeNumbers(test, One);
-    }
-    return Result;
-}
-
-LargeNumber LargeNumberOperations::Inverse(LargeNumber input, LargeNumber mod)
-{
-    LargeNumber Result, Q, A2, A3, B2, B3, T2, T3, Zero, One, temp;
-    One.digits[0] = 1;
-    A2 = copyLargeNumber(Zero);
-    A3 = copyLargeNumber(mod);
-    B2 = copyLargeNumber(One);
-    B3 = copyLargeNumber(input);
-    while (!isEqualToZero(B3) && !isEqualToZero(subtractLargeNumbers(B3, One)))
-    {
-        Q = divideByLargeNumber(A3, B3).quotient;
-        T2 = subtractLargeNumbers(A2, multiplyLargeNumbers(Q, B2));
-        T3 = subtractLargeNumbers(A3, multiplyLargeNumbers(Q, B3));
-        A2 = copyLargeNumber(B2);
-        A3 = copyLargeNumber(B3);
-        B2 = copyLargeNumber(T2);
-        B3 = copyLargeNumber(T3);
-    }
-    if (isEqualToZero(subtractLargeNumbers(B3, One)))
-    {
-        while (B2.is_negative)
-            B2 = addLargeNumbers(B2, mod);
-        Result = B2;
-        temp = subtractLargeNumbers(Result, mod);
-        while (!temp.is_negative)
-        {
-            Result = temp;
-            temp = subtractLargeNumbers(Result, mod);
-        }
     }
     return Result;
 }
@@ -636,35 +595,15 @@ bool operator==(const BigIntHolder& a, const BigIntHolder& b)
     return a.digits == b.digits;
 }
 
-bool operator!=(const BigIntHolder& a, const BigIntHolder& b) 
-{
-    return !(a == b);
-}
-
 bool operator<(const BigIntHolder& a, const BigIntHolder& b) 
 {
     int n = Length(a), m = Length(b);
     if (n != m)
         return n < m;
     while (n--)
-        if (a.digits[n] != b.digits[n])
+        if (!(a.digits[n] == b.digits[n]))
             return a.digits[n] < b.digits[n];
     return false;
-}
-
-bool operator>(const BigIntHolder& a, const BigIntHolder& b) 
-{
-    return b < a;
-}
-
-bool operator>=(const BigIntHolder& a, const BigIntHolder& b) 
-{
-    return !(a < b);
-}
-
-bool operator<=(const BigIntHolder& a, const BigIntHolder& b) 
-{
-    return !(a > b);
 }
 
 BigIntHolder& BigIntHolder::operator=(const BigIntHolder& a) 
@@ -831,7 +770,7 @@ BigIntHolder& operator/=(BigIntHolder& a, const BigIntHolder& b)
     for (; i >= 0; i--)
     {
         t = t * 10 + a.digits[i];
-        for (cc = 9; cc * b > t; cc--);
+        for (cc = 9; t < cc * b; cc--);
         t -= cc * b;
         cat[lgcat++] = cc;
     }
@@ -873,7 +812,7 @@ BigIntHolder& operator%=(BigIntHolder& a, const BigIntHolder& b)
     for (; i >= 0; i--) 
     {
         t = t * 10 + a.digits[i];
-        for (cc = 9; cc * b > t; cc--);
+        for (cc = 9; t < cc * b; cc--);
         t -= cc * b;
         cat[lgcat++] = cc;
     }
@@ -889,28 +828,6 @@ BigIntHolder operator%(const BigIntHolder& a, const BigIntHolder& b)
     return temp;
 }
 
-BigIntHolder& operator^=(BigIntHolder& a, const BigIntHolder& b)
-{
-    BigIntHolder Exponent, Base(a);
-    Exponent = b;
-    a = 1;
-    while (!Null(Exponent)) 
-    {
-        if (Exponent[0] & 1)
-            a *= Base;
-        Base *= Base;
-        divide_by_2(Exponent);
-    }
-    return a;
-}
-
-BigIntHolder operator^(BigIntHolder& a, BigIntHolder& b) 
-{
-    BigIntHolder temp(a);
-    temp ^= b;
-    return temp;
-}
-
 void divide_by_2(BigIntHolder& a) 
 {
     int add = 0;
@@ -922,32 +839,6 @@ void divide_by_2(BigIntHolder& a)
     }
     while (a.digits.size() > 1 && !a.digits.back())
         a.digits.pop_back();
-}
-
-BigIntHolder sqrt(BigIntHolder& a) 
-{
-    BigIntHolder left(1), right(a), v(1), mid, prod;
-    divide_by_2(right);
-    while (left <= right) 
-    {
-        mid += left;
-        mid += right;
-        divide_by_2(mid);
-        prod = (mid * mid);
-        if (prod <= a) 
-        {
-            v = mid;
-            ++mid;
-            left = mid;
-        }
-        else 
-        {
-            --mid;
-            right = mid;
-        }
-        mid = BigIntHolder();
-    }
-    return v;
 }
 
 string BigIntHolder::toString()
