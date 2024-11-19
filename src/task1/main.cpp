@@ -43,80 +43,86 @@ public:
     bool isPrimeNumber(const LargeNumber& number);
 };
 
-class BigIntHolder {
+class BigInteger 
+{
+private:
     string digits;
 public:
-    BigIntHolder(string&);
-    BigIntHolder(BigIntHolder&);
-    BigIntHolder(unsigned long long n = 0);
-    BigIntHolder(const char*);
-    friend void divide_by_2(BigIntHolder& a);
-    friend bool Null(const BigIntHolder&);
-    friend int Length(const BigIntHolder&);
+    BigInteger(string&);
+    BigInteger(BigInteger&);
+    BigInteger(unsigned long long n = 0);
+    BigInteger(const char*);
+    BigInteger(const BigInteger& a);
+    friend bool Null(const BigInteger&);
     int operator[](const int)const;
     string toString();
-    BigIntHolder& operator = (const BigIntHolder&);
-    BigIntHolder& operator++();
-    BigIntHolder operator++(int temp);
-    BigIntHolder& operator--();
-    BigIntHolder operator--(int temp);
-    friend BigIntHolder& operator+=(BigIntHolder&, const BigIntHolder&);
-    friend BigIntHolder operator+(const BigIntHolder&, const BigIntHolder&);
-    friend BigIntHolder& operator-=(BigIntHolder&, const BigIntHolder&);
-    friend BigIntHolder operator-(const BigIntHolder&, const BigIntHolder&);
-    friend bool operator==(const BigIntHolder&, const BigIntHolder&);
-    friend bool operator<(const BigIntHolder&, const BigIntHolder&);
-    friend BigIntHolder& operator*=(BigIntHolder&, const BigIntHolder&);
-    friend BigIntHolder operator*(const BigIntHolder&, const BigIntHolder&);
-    friend BigIntHolder& operator/=(BigIntHolder&, const BigIntHolder&);
-    friend BigIntHolder operator/(const BigIntHolder&, const BigIntHolder&);
-    friend BigIntHolder operator%(const BigIntHolder&, const BigIntHolder&);
-    friend BigIntHolder& operator%=(BigIntHolder&, const BigIntHolder&);
+    BigInteger& operator=(const BigInteger&);
+
+    BigInteger& operator++();
+    BigInteger operator++(int temp);
+    friend BigInteger& operator+=(BigInteger&, const BigInteger&);
+    friend BigInteger operator+(const BigInteger&, const BigInteger&);
+    
+    BigInteger& operator--();
+    BigInteger operator--(int temp);
+    friend BigInteger& operator-=(BigInteger&, const BigInteger&);
+    friend BigInteger operator-(const BigInteger&, const BigInteger&);
+    
+    friend BigInteger& operator*=(BigInteger&, const BigInteger&);
+    friend BigInteger operator*(const BigInteger&, const BigInteger&);
+    
+    friend BigInteger& operator/=(BigInteger&, const BigInteger&);
+    friend BigInteger operator/(const BigInteger&, const BigInteger&);
+    
+    friend BigInteger operator%(const BigInteger&, const BigInteger&);
+    friend BigInteger& operator%=(BigInteger&, const BigInteger&);
+
+    friend bool operator==(const BigInteger&, const BigInteger&);
+    friend bool operator<(const BigInteger&, const BigInteger&);
 };
 
-BigIntHolder hexadecimalToDecimal(string hexVal) 
+BigInteger convertHexToDecimal(string hexValue)
 {
-    int len = hexVal.size();
-    BigIntHolder base("1");
-    BigIntHolder dec_val("0");
-    for (int i = 0; i < len; i++) 
+    int length = hexValue.size();
+    BigInteger base("1");
+    BigInteger decimalValue("0");
+    for (int i = 0; i < length; i++)
     {
-        if (hexVal[i] >= '0' && hexVal[i] <= '9')
+        if (hexValue[i] >= '0' && hexValue[i] <= '9')
         {
-            dec_val += (hexVal[i] - '0') * base;
+            decimalValue += (hexValue[i] - '0') * base;
             base = base * 16;
         }
-        else if (hexVal[i] >= 'A' && hexVal[i] <= 'F')
+        else if (hexValue[i] >= 'A' && hexValue[i] <= 'F')
         {
-            dec_val += (hexVal[i] - '7') * base;
+            decimalValue += (hexValue[i] - '7') * base;
             base = base * 16;
         }
     }
-    return dec_val;
+    return decimalValue;
 }
-
-int main(int argc,char**argv)
+int main(int argc, char** argv)
 {
-    LargeNumberOperations MyNum;
-    string hex ;
-    int ouput;
-    BigIntHolder k;
-    string test_id;
-    if (argc < 3)
-        cout << "Not enough Command Line Argument passed!";
-    else {
-        ifstream inputTest(argv[1]);
-        inputTest >> hex;
-        inputTest.close();
-        k = hexadecimalToDecimal(hex);
-        LargeNumber n;
-        string nStr = k.toString();
-        n = MyNum.convertStringToLargeNumber(nStr);
-        int res;
-        res = MyNum.isPrimeNumber(n);
-        ofstream outputTest(argv[2]);
-        outputTest << res;
-        outputTest.close();
+    LargeNumberOperations numberOperations;
+    string hexInput;
+    int outputResult;
+    BigInteger decimalValue;
+    string testFileId;
+    if (argc < 3) cout << "Not enough Command Line Arguments passed!" << endl;
+    else
+    {
+        ifstream inputTestFile(argv[1]);
+        inputTestFile >> hexInput;
+        inputTestFile.close();
+        decimalValue = convertHexToDecimal(hexInput);
+        LargeNumber largeNumber;
+        string largeNumberStr = decimalValue.toString();
+        largeNumber = numberOperations.convertStringToLargeNumber(largeNumberStr);
+        int result;
+        result = numberOperations.isPrimeNumber(largeNumber);
+        ofstream outputTestFile(argv[2]);
+        outputTestFile << result;
+        outputTestFile.close();
     }
     return 0;
 }
@@ -510,7 +516,7 @@ bool LargeNumberOperations::isPrimeNumber(const LargeNumber& number)
     return Result;
 }
 
-BigIntHolder::BigIntHolder(string& s) 
+BigInteger::BigInteger(string& s) 
 {
     digits = "";
     int n = s.size();
@@ -523,7 +529,7 @@ BigIntHolder::BigIntHolder(string& s)
     }
 }
 
-BigIntHolder::BigIntHolder(unsigned long long numConvert) 
+BigInteger::BigInteger(unsigned long long numConvert) 
 {
     do {
         digits.push_back(numConvert % 10);
@@ -531,7 +537,7 @@ BigIntHolder::BigIntHolder(unsigned long long numConvert)
     } while (numConvert != 0);
 }
 
-BigIntHolder::BigIntHolder(const char* s)
+BigInteger::BigInteger(const char* s)
 {
     digits = "";
     for (int i = strlen(s) - 1; i >= 0; i--) 
@@ -543,54 +549,32 @@ BigIntHolder::BigIntHolder(const char* s)
     }
 }
 
-BigIntHolder::BigIntHolder(BigIntHolder& a) 
+BigInteger::BigInteger(BigInteger& a) 
 {
     digits = a.digits;
 }
 
-bool Null(const BigIntHolder& a) 
+BigInteger::BigInteger(const BigInteger& a) 
 {
-    if (a.digits.size() == 1 && a.digits[0] == 0)
-        return true;
-    return false;
+    this->digits = a.digits;
 }
 
-int Length(const BigIntHolder& a) 
-{
-    return a.digits.size();
+bool Null(const BigInteger& a) {
+    return (a.digits.size() == 1 && a.digits[0] == 0);
 }
 
-int BigIntHolder::operator[](const int index) const
-{
+int BigInteger::operator[](const int index) const {
     if (digits.size() <= index || index < 0)
         throw("ERROR");
     return digits[index];
 }
 
-bool operator==(const BigIntHolder& a, const BigIntHolder& b) 
-{
-    return a.digits == b.digits;
-}
-
-bool operator<(const BigIntHolder& a, const BigIntHolder& b) 
-{
-    int n = Length(a), m = Length(b);
-    if (n != m)
-        return n < m;
-    while (n--)
-        if (!(a.digits[n] == b.digits[n]))
-            return a.digits[n] < b.digits[n];
-    return false;
-}
-
-BigIntHolder& BigIntHolder::operator=(const BigIntHolder& a) 
-{
+BigInteger& BigInteger::operator=(const BigInteger& a) {
     digits = a.digits;
     return *this;
 }
 
-BigIntHolder& BigIntHolder::operator++() 
-{
+BigInteger& BigInteger::operator++() {
     int i, n = digits.size();
     for (i = 0; i < n && digits[i] == 9; i++)
         digits[i] = 0;
@@ -601,16 +585,35 @@ BigIntHolder& BigIntHolder::operator++()
     return *this;
 }
 
-BigIntHolder BigIntHolder::operator++(int temp) 
-{
-    BigIntHolder aux;
+BigInteger BigInteger::operator++(int temp) {
+    BigInteger aux;
     aux = *this;
     ++(*this);
     return aux;
 }
 
-BigIntHolder& BigIntHolder::operator--() 
-{
+BigInteger& operator+=(BigInteger& a, const BigInteger& b) {
+    int carry = 0, sum;
+    size_t n = a.digits.size(), m = b.digits.size();
+    if (m > n) 
+        a.digits.resize(m, 0);
+    for (size_t i = 0; i < m || carry; ++i) {
+        if (i == a.digits.size()) 
+            a.digits.push_back(0);
+        sum = a.digits[i] + carry + (i < m ? b.digits[i] : 0);
+        a.digits[i] = sum % 10;
+        carry = sum / 10;
+    }
+    return a;
+}
+
+BigInteger operator+(const BigInteger& a, const BigInteger& b) {
+    BigInteger temp(a);
+    temp += b;
+    return temp;
+}
+
+BigInteger& BigInteger::operator--() {
     if (digits[0] == 0 && digits.size() == 1)
         throw("UNDERFLOW");
     int i, n = digits.size();
@@ -622,206 +625,125 @@ BigIntHolder& BigIntHolder::operator--()
     return *this;
 }
 
-BigIntHolder BigIntHolder::operator--(int temp) 
-{
-    BigIntHolder aux;
+BigInteger BigInteger::operator--(int temp) {
+    BigInteger aux;
     aux = *this;
     --(*this);
     return aux;
 }
 
-BigIntHolder& operator+=(BigIntHolder& a, const BigIntHolder& b) 
-{
-    int t = 0, s, i;
-    int n = Length(a), m = Length(b);
-    if (m > n)
-        a.digits.append(m - n, 0);
-    n = Length(a);
-    for (i = 0; i < n; i++) 
-    {
-        s = (i < m) ? (a.digits[i] + b.digits[i] + t) : (a.digits[i] + t);
-        t = s / 10;
-        a.digits[i] = (s % 10);
+BigInteger& operator-=(BigInteger& a, const BigInteger& b) {
+    if (a < b) throw("UNDERFLOW");
+    int n = a.digits.size(), m = b.digits.size(), t = 0;
+    for (int i = 0; i < n; i++) {
+        int s = a.digits[i] - (i < m ? b.digits[i] : 0) + t;
+        t = s < 0 ? -1 : 0;
+        a.digits[i] = s < 0 ? s + 10 : s;
     }
-    if (t)
-        a.digits.push_back(t);
+    while (n > 1 && a.digits[n - 1] == 0) a.digits.pop_back(), n--;
     return a;
 }
 
-BigIntHolder operator+(const BigIntHolder& a, const BigIntHolder& b) 
-{
-    BigIntHolder temp;
-    temp = a;
-    temp += b;
-    return temp;
-}
-
-BigIntHolder& operator-=(BigIntHolder& a, const BigIntHolder& b) 
-{
-    if (a < b)
-        throw("UNDERFLOW");
-    int n = Length(a), m = Length(b);
-    int i, t = 0, s;
-    for (i = 0; i < n; i++) 
-    {
-        if (i < m)
-            s = a.digits[i] - b.digits[i] + t;
-        else
-            s = a.digits[i] + t;
-        if (s < 0)
-            s += 10,
-            t = -1;
-        else
-            t = 0;
-        a.digits[i] = s;
-    }
-    while (n > 1 && a.digits[n - 1] == 0)
-        a.digits.pop_back(),
-        n--;
-    return a;
-}
-
-BigIntHolder operator-(const BigIntHolder& a, const BigIntHolder& b)
-{
-    BigIntHolder temp;
+BigInteger operator-(const BigInteger& a, const BigInteger& b) {
+    BigInteger temp;
     temp = a;
     temp -= b;
     return temp;
 }
 
-BigIntHolder& operator*=(BigIntHolder& a, const BigIntHolder& b)
-{
-    if (Null(a) || Null(b)) 
-    {
-        a = BigIntHolder();
-        return a;
-    }
-    int n = a.digits.size(), m = b.digits.size();
-    vector<int> v(n + m, 0);
-    for (int i = 0; i < n; i++)
-        for (int j = 0; j < m; j++)
-            v[i + j] += (a.digits[i]) * (b.digits[j]);
-    n += m;
-    a.digits.resize(v.size());
-    for (int s, i = 0, t = 0; i < n; i++)
-    {
-        s = t + v[i];
-        v[i] = s % 10;
-        t = s / 10;
-        a.digits[i] = v[i];
-    }
-    for (int i = n - 1; i >= 1 && !v[i]; i--)
-        a.digits.pop_back();
-    return a;
-}
-
-BigIntHolder operator*(const BigIntHolder& a, const BigIntHolder& b) 
-{
-    BigIntHolder temp;
+BigInteger operator*(const BigInteger& a, const BigInteger& b) {
+    BigInteger temp;
     temp = a;
     temp *= b;
     return temp;
 }
 
-BigIntHolder& operator/=(BigIntHolder& a, const BigIntHolder& b) 
-{
-    if (Null(b))
-        throw("Arithmetic Error: Division By 0");
-    if (a < b) {
-        a = BigIntHolder();
-        return a;
+BigInteger& operator*=(BigInteger& a, const BigInteger& b) {
+    if (Null(a) || Null(b)) { a = BigInteger(); return a; }
+    int n = a.digits.size(), m = b.digits.size();
+    vector<int> v(n + m, 0);
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < m; j++)
+            v[i + j] += a.digits[i] * b.digits[j];
+    a.digits.resize(n + m);
+    int carry = 0;
+    for (int i = 0; i < a.digits.size(); i++) {
+        v[i] += carry;
+        a.digits[i] = v[i] % 10;
+        carry = v[i] / 10;
     }
-    if (a == b) {
-        a = BigIntHolder(1);
-        return a;
-    }
-    int i, lgcat = 0, cc;
-    int n = Length(a), m = Length(b);
-    vector<int> cat(n, 0);
-    BigIntHolder t;
-    for (i = n - 1; t * 10 + a.digits[i] < b; i--) 
-    {
-        t *= 10;
-        t += a.digits[i];
-    }
-    for (; i >= 0; i--)
-    {
-        t = t * 10 + a.digits[i];
-        for (cc = 9; t < cc * b; cc--);
-        t -= cc * b;
-        cat[lgcat++] = cc;
-    }
-    a.digits.resize(cat.size());
-    for (i = 0; i < lgcat; i++)
-        a.digits[i] = cat[lgcat - i - 1];
-    a.digits.resize(lgcat);
+    while (a.digits.size() > 1 && a.digits.back() == 0)
+        a.digits.pop_back();
     return a;
 }
 
-BigIntHolder operator/(const BigIntHolder& a, const BigIntHolder& b) 
-{
-    BigIntHolder temp;
+BigInteger& operator/=(BigInteger& a, const BigInteger& b) {
+    if (Null(b)) throw("Arithmetic Error: Division By 0");
+    if (a < b) { a = BigInteger(); return a; }
+    int n = a.digits.size(), m = b.digits.size();
+    vector<int> quotient(n, 0);
+    BigInteger temp;
+    for (int i = n - 1; i >= 0; --i) {
+        temp = temp * 10 + a.digits[i];
+        int divisor = 0;
+        while (b < temp || b == temp) { temp -= b; ++divisor; }
+        quotient[n - i - 1] = divisor;
+    }
+    a.digits.clear();
+    for (int digit : quotient) a.digits.push_back(digit);
+    return a;
+}
+
+BigInteger operator/(const BigInteger& a, const BigInteger& b) {
+    BigInteger temp;
     temp = a;
     temp /= b;
     return temp;
 }
 
-BigIntHolder& operator%=(BigIntHolder& a, const BigIntHolder& b) 
-{
-    if (Null(b))
-        throw("Arithmetic Error: Division By 0");
-    if (a < b)
-        return a;
-    if (a == b) 
-    {
-        a = BigIntHolder();
-        return a;
-    }
-    int i, lgcat = 0, cc;
-    int n = Length(a), m = Length(b);
-    vector<int> cat(n, 0);
-    BigIntHolder t;
-    for (i = n - 1; t * 10 + a.digits[i] < b; i--) 
-    {
+BigInteger& operator%=(BigInteger& a, const BigInteger& b) {
+    if (Null(b)) throw("Arithmetic Error: Division By 0");
+    if (a < b) return a;
+    if (a == b) { a = BigInteger(); return a; }
+    int n = a.digits.size();
+    BigInteger t;
+    for (int i = n - 1; t * 10 + a.digits[i] < b; i--) {
         t *= 10;
         t += a.digits[i];
     }
-    for (; i >= 0; i--) 
-    {
+    for (int i = n - 1; i >= 0; i--) {
         t = t * 10 + a.digits[i];
-        for (cc = 9; t < cc * b; cc--);
-        t -= cc * b;
-        cat[lgcat++] = cc;
+        int cc = 0;
+        while (b < t || b == t) { t -= b; ++cc; }
     }
     a = t;
     return a;
 }
 
-BigIntHolder operator%(const BigIntHolder& a, const BigIntHolder& b) 
-{
-    BigIntHolder temp;
+BigInteger operator%(const BigInteger& a, const BigInteger& b) {
+    BigInteger temp;
     temp = a;
     temp %= b;
     return temp;
 }
 
-void divide_by_2(BigIntHolder& a) 
-{
-    int add = 0;
-    for (int i = a.digits.size() - 1; i >= 0; i--) 
-    {
-        int digit = (a.digits[i] >> 1) + add;
-        add = ((a.digits[i] & 1) * 5);
-        a.digits[i] = digit;
-    }
-    while (a.digits.size() > 1 && !a.digits.back())
-        a.digits.pop_back();
-}
-
-string BigIntHolder::toString()
-{
+string BigInteger::toString() {
     string res="";
     for (int i = this->digits.size() - 1; i >= 0; i--)
          res = res +to_string((short)this->digits[i]);
     return res;
+}
+
+bool operator==(const BigInteger& a, const BigInteger& b) {
+    return a.digits == b.digits;
+}
+
+bool operator<(const BigInteger& a, const BigInteger& b) {
+    size_t n = a.digits.size(), m = b.digits.size();
+    if (n != m)
+        return n < m;
+    for (size_t i = n; i-- > 0; ) 
+        if (a.digits[i] != b.digits[i])
+            return a.digits[i] < b.digits[i];
+    return false;
 }
