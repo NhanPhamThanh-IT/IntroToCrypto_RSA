@@ -34,3 +34,9 @@
 
 # VS code folder
 .vscode
+
+# Testing coding files
+temp.py
+test.py
+temp.cpp
+test.cpp
