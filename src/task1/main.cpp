@@ -75,6 +75,7 @@ public:
 
 BigInteger convertHexToDecimal(std::string hexValue)
 {
+    std::reverse(hexValue.begin(), hexValue.end());
     int length = hexValue.size();
     BigInteger base("1");
     BigInteger decimalValue("0");
