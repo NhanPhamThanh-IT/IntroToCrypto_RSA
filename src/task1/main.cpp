@@ -3,7 +3,6 @@
 #include <string>
 #include <cstring>
 #include <algorithm>
-#include <stack>
 #include <vector>
 
 using namespace std;
@@ -427,51 +426,29 @@ DivisionResult LargeNumberOperations::divideByLargeNumber(LargeNumber dividend, 
     return Result;
 }
 
-LargeNumber LargeNumberOperations::modularExponentiation(const LargeNumber& base, const LargeNumber& exponent, const LargeNumber& modulus)
-{
-    if (isEqualToZero(base))
-        return base;
-    if (isEqualToZero(exponent))
-    {
-        LargeNumber hop;
-        hop.digits[0] = 1;
-        return hop;
+LargeNumber LargeNumberOperations::modularExponentiation(const LargeNumber& base, const LargeNumber& exponent, const LargeNumber& modulus) {
+    if (isEqualToZero(base)) return base;
+    if (isEqualToZero(exponent)) {
+        LargeNumber result;
+        result.digits[0] = 1;
+        return result;
     }
-    LargeNumber first = copyLargeNumber(base);
-    LargeNumber second = copyLargeNumber(exponent);
-    stack<LargeNumberArray> memory;
-    LargeNumberArray AoA;
-    LargeNumber Result, tempResult, Count, tempCount, check, two;
-    DivisionResult DR;
-    two.digits[0] = 2;
-    tempCount.digits[0] = 1;
-    tempResult = first;
-    Result = first;
-    do
-    {
-        DR = divideByLargeNumber(tempResult, modulus);
-        Result = DR.remainder;
-        Count = tempCount;
-        AoA.result = Result;
-        AoA.count = Count;
-        memory.push(AoA);
-        tempCount = multiplyLargeNumbers(Count, two);
-        tempResult = multiplyLargeNumbers(Result, Result);
-        check = subtractLargeNumbers(second, tempCount);
-    } while (!check.is_negative);
-    Result = *new LargeNumber;
+    LargeNumber Result, Base, Exp;
     Result.digits[0] = 1;
-    while (!isEqualToZero(second))
-    {
-        AoA = memory.top();
-        if (!subtractLargeNumbers(second, AoA.count).is_negative)
-        {
-            Result = multiplyLargeNumbers(Result, AoA.result);
+    Base = copyLargeNumber(base);
+    Exp = copyLargeNumber(exponent);
+    DivisionResult DR = divideByLargeNumber(Base, modulus);
+    Base = DR.remainder;
+    while (!isEqualToZero(Exp)) {
+        if (Exp.digits[0] % 2 == 1) {
+            Result = multiplyLargeNumbers(Result, Base);
             DR = divideByLargeNumber(Result, modulus);
             Result = DR.remainder;
-            second = subtractLargeNumbers(second, AoA.count);
         }
-        memory.pop();
+        Base = multiplyLargeNumbers(Base, Base);
+        DR = divideByLargeNumber(Base, modulus);
+        Base = DR.remainder;
+        Exp = divideByLargeNumber(Exp, *new LargeNumber{2}).quotient;
     }
     return Result;
 }
