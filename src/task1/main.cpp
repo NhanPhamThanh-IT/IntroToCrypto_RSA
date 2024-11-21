@@ -1,7 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <cstring>
 #include <algorithm>
 #include <vector>
 
@@ -41,8 +40,7 @@ public:
     bool isPrimeNumber(const LargeNumber& number);
 };
 
-class BigInteger 
-{
+class BigInteger {
 private:
     std::string digits;
 public:
@@ -394,8 +392,9 @@ BigInteger::BigInteger(unsigned long long numConvert)
 }
 
 BigInteger::BigInteger(const char* s) {
+    std::string str = std::string(s);
     digits = "";
-    for (int i = strlen(s) - 1; i >= 0; i--) 
+    for (int i = str.length() - 1; i >= 0; i--) 
     {
         if (!isdigit(s[i]))
             throw("ERROR CONVERT");
