@@ -33,8 +33,8 @@ public:
     DivisionResult divideBySmallNumber(LargeNumber dividend, LargeNumber divisor);
     DivisionResult divideByLargeNumber(LargeNumber dividend, LargeNumber divisor);
     LargeNumber modularExponentiation(const LargeNumber& base, const LargeNumber& exponent, const LargeNumber& modulus);
-    std::string decimalToHexLittleEndian(LargeNumber decimal);
-    LargeNumber Inverse(LargeNumber input, LargeNumber mod);
+    std::string decimalToHexBigEndian(LargeNumber decimal);
+    LargeNumber inverse(LargeNumber input, LargeNumber mod);
 };
 
 class BigInteger {
@@ -68,11 +68,11 @@ public:
     friend bool operator<(const BigInteger&, const BigInteger&);
 };
 
-BigInteger hexadecimalToDecimal(std::string hexVal) {
+BigInteger hexBigEndianToDecimal(std::string hexVal) {
     int len = hexVal.size();
     BigInteger base("1");
     BigInteger dec_val("0");
-    for (int i = 0; i < len; i++) {
+    for (int i = len - 1; i >= 0; i--) {
         if (hexVal[i] >= '0' && hexVal[i] <= '9') {
             dec_val += (hexVal[i] - '0') * base;
             base = base * 16;
@@ -104,6 +104,18 @@ std::string convertToString(LargeNumber input) {
     return out.empty() || out == "-" ? "0" : out;
 }
 
+std::string LargeNumberOperations::decimalToHexBigEndian(LargeNumber decimal) {
+    if (isEqualToZero(decimal)) return "0";
+    std::string res;
+    LargeNumber Sixteen = {16};
+    while (!isEqualToZero(decimal)) {
+        int rem = divideByLargeNumber(decimal, Sixteen).remainder.digits[0];
+        res = (rem < 10) ? std::to_string(rem) + res : std::string(1, 'A' + rem - 10) + res;
+        decimal = divideByLargeNumber(decimal, Sixteen).quotient;
+    }
+    return res;
+}
+
 int main(int argc, char** argv) {
     if (argc < 3) { std::cerr << "Not enough Command Line Arguments passed!" << std::endl; return 1; }  
     std::string hexP, hexQ, hexE;
@@ -112,13 +124,13 @@ int main(int argc, char** argv) {
     inputTest >> hexP >> hexQ >> hexE;
     inputTest.close();
     LargeNumberOperations MyNum;
-    LargeNumber P = MyNum.convertStringToLargeNumber(hexadecimalToDecimal(hexP).toString());  
-    LargeNumber Q = MyNum.convertStringToLargeNumber(hexadecimalToDecimal(hexQ).toString());  
-    LargeNumber E = MyNum.convertStringToLargeNumber(hexadecimalToDecimal(hexE).toString());  
+    LargeNumber P = MyNum.convertStringToLargeNumber(hexBigEndianToDecimal(hexP).toString());  
+    LargeNumber Q = MyNum.convertStringToLargeNumber(hexBigEndianToDecimal(hexQ).toString());  
+    LargeNumber E = MyNum.convertStringToLargeNumber(hexBigEndianToDecimal(hexE).toString());  
     LargeNumber One = {1};
     LargeNumber Phi = MyNum.multiplyLargeNumbers(MyNum.subtractLargeNumbers(P, One), MyNum.subtractLargeNumbers(Q, One));  
-    LargeNumber D = MyNum.Inverse(E, Phi);  
-    std::string output = D.is_negative ? convertToString(D) : MyNum.decimalToHexLittleEndian(D);  
+    LargeNumber D = MyNum.inverse(E, Phi);  
+    std::string output = D.is_negative ? convertToString(D) : MyNum.decimalToHexBigEndian(D);  
     std::ofstream outputTest(argv[2]);
     if (!outputTest) { std::cerr << "Failed to open output file!" << std::endl; return 1; }  
     outputTest << output;  
@@ -336,19 +348,7 @@ LargeNumber LargeNumberOperations::modularExponentiation(const LargeNumber& base
     return Result;
 }
 
-std::string LargeNumberOperations::decimalToHexLittleEndian(LargeNumber decimal) {
-    std::string res;
-    LargeNumber Sixteen = {16};
-    while (!isEqualToZero(decimal)) {
-        auto DivisionResult = divideByLargeNumber(decimal, Sixteen);
-        int rem = DivisionResult.remainder.digits[0];
-        res += (rem < 10) ? std::to_string(rem) : std::string(1, 'A' + (rem - 10));
-        decimal = DivisionResult.quotient;
-    }
-    return res;
-}
-
-LargeNumber LargeNumberOperations::Inverse(LargeNumber input, LargeNumber mod) {
+LargeNumber LargeNumberOperations::inverse(LargeNumber input, LargeNumber mod) {
     LargeNumber Result, Q, A2, A3, B2, B3, T2, T3, Zero, One, temp;
     One.digits[0] = 1;
     A2 = copyLargeNumber(Zero);
@@ -388,10 +388,8 @@ BigInteger::BigInteger(std::string& s)
     int n = s.size();
     for (int i = n - 1; i >= 0; i--) 
     {
-        if (!isdigit(s[i]))
-            throw("ERROR CONVERT");
-        else
-            digits.push_back(s[i] - '0');
+        if (!isdigit(s[i])) throw("ERROR CONVERT");
+        else digits.push_back(s[i] - '0');
     }
 }
 
