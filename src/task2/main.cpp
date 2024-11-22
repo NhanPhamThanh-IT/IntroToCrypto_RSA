@@ -33,7 +33,7 @@ public:
     DivisionResult divideBySmallNumber(LargeNumber dividend, LargeNumber divisor);
     DivisionResult divideByLargeNumber(LargeNumber dividend, LargeNumber divisor);
     LargeNumber modularExponentiation(const LargeNumber& base, const LargeNumber& exponent, const LargeNumber& modulus);
-    std::string decimalToHexBigEndian(LargeNumber decimal);
+    std::string convertDecimalToHexBigEndian(LargeNumber decimal);
     LargeNumber inverse(LargeNumber input, LargeNumber mod);
 };
 
@@ -68,7 +68,7 @@ public:
     friend bool operator<(const BigInteger&, const BigInteger&);
 };
 
-BigInteger hexBigEndianToDecimal(std::string hexVal) {
+BigInteger convertHexBigEndianToDecimal(std::string hexVal) {
     int len = hexVal.size();
     BigInteger base("1");
     BigInteger dec_val("0");
@@ -104,7 +104,7 @@ std::string convertToString(LargeNumber input) {
     return out.empty() || out == "-" ? "0" : out;
 }
 
-std::string LargeNumberOperations::decimalToHexBigEndian(LargeNumber decimal) {
+std::string LargeNumberOperations::convertDecimalToHexBigEndian(LargeNumber decimal) {
     if (isEqualToZero(decimal)) return "0";
     std::string res;
     LargeNumber Sixteen = {16};
@@ -124,13 +124,13 @@ int main(int argc, char** argv) {
     inputTest >> hexP >> hexQ >> hexE;
     inputTest.close();
     LargeNumberOperations MyNum;
-    LargeNumber P = MyNum.convertStringToLargeNumber(hexBigEndianToDecimal(hexP).toString());  
-    LargeNumber Q = MyNum.convertStringToLargeNumber(hexBigEndianToDecimal(hexQ).toString());  
-    LargeNumber E = MyNum.convertStringToLargeNumber(hexBigEndianToDecimal(hexE).toString());  
+    LargeNumber P = MyNum.convertStringToLargeNumber(convertHexBigEndianToDecimal(hexP).toString());  
+    LargeNumber Q = MyNum.convertStringToLargeNumber(convertHexBigEndianToDecimal(hexQ).toString());  
+    LargeNumber E = MyNum.convertStringToLargeNumber(convertHexBigEndianToDecimal(hexE).toString());  
     LargeNumber One = {1};
     LargeNumber Phi = MyNum.multiplyLargeNumbers(MyNum.subtractLargeNumbers(P, One), MyNum.subtractLargeNumbers(Q, One));  
     LargeNumber D = MyNum.inverse(E, Phi);  
-    std::string output = D.is_negative ? convertToString(D) : MyNum.decimalToHexBigEndian(D);  
+    std::string output = D.is_negative ? convertToString(D) : MyNum.convertDecimalToHexBigEndian(D);  
     std::ofstream outputTest(argv[2]);
     if (!outputTest) { std::cerr << "Failed to open output file!" << std::endl; return 1; }  
     outputTest << output;  

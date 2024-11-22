@@ -8,8 +8,10 @@
 
 struct LargeNumber
 {
-    int digits[MAX_DIGITS] = {};
+    std::vector<int> digits;
     bool is_negative = false;
+    LargeNumber() : digits(MAX_DIGITS, 0) {}
+    LargeNumber(const std::vector<int>& input_digits) : digits(input_digits) {}
 };
 
 struct DivisionResult
@@ -71,27 +73,7 @@ public:
     friend bool operator<(const BigInteger&, const BigInteger&);
 };
 
-BigInteger convertHexToDecimal(std::string hexValue)
-{
-    std::reverse(hexValue.begin(), hexValue.end());
-    int length = hexValue.size();
-    BigInteger base("1");
-    BigInteger decimalValue("0");
-    for (int i = 0; i < length; i++)
-    {
-        if (hexValue[i] >= '0' && hexValue[i] <= '9')
-        {
-            decimalValue += (hexValue[i] - '0') * base;
-            base = base * 16;
-        }
-        else if (hexValue[i] >= 'A' && hexValue[i] <= 'F')
-        {
-            decimalValue += (hexValue[i] - '7') * base;
-            base = base * 16;
-        }
-    }
-    return decimalValue;
-}
+BigInteger convertHexToDecimal(std::string hexValue);
 
 int main(int argc, char** argv) {
     LargeNumberOperations numberOperations;
@@ -115,6 +97,28 @@ int main(int argc, char** argv) {
         outputTestFile.close();
     }
     return 0;
+}
+
+BigInteger convertHexToDecimal(std::string hexValue)
+{
+    std::reverse(hexValue.begin(), hexValue.end());
+    int length = hexValue.size();
+    BigInteger base("1");
+    BigInteger decimalValue("0");
+    for (int i = 0; i < length; i++)
+    {
+        if (hexValue[i] >= '0' && hexValue[i] <= '9')
+        {
+            decimalValue += (hexValue[i] - '0') * base;
+            base = base * 16;
+        }
+        else if (hexValue[i] >= 'A' && hexValue[i] <= 'F')
+        {
+            decimalValue += (hexValue[i] - '7') * base;
+            base = base * 16;
+        }
+    }
+    return decimalValue;
 }
 
 LargeNumber LargeNumberOperations::convertStringToLargeNumber(std::string& str) {
@@ -330,7 +334,7 @@ LargeNumber LargeNumberOperations::modularExponentiation(const LargeNumber& base
         Base = multiplyLargeNumbers(Base, Base);
         DR = divideByLargeNumber(Base, modulus);
         Base = DR.remainder;
-        Exp = divideByLargeNumber(Exp, *new LargeNumber{2}).quotient;
+        Exp = divideByLargeNumber(Exp, LargeNumber({2})).quotient;
     }
     return Result;
 }
