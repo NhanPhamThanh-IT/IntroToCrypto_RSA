@@ -20,11 +20,6 @@ struct DivisionResult {
     LargeNumber remainder;
 };
 
-struct LargeNumberArray {
-    LargeNumber result;
-    LargeNumber count;
-};
-
 namespace LargeNumberConversion {
     LargeNumber copyLargeNumber(const LargeNumber& number);
     LargeNumber addLeadingDigit(const LargeNumber& number, int digit);
@@ -43,6 +38,11 @@ namespace LargeNumberSpecialOperations {
     LargeNumber modularExponentiation(const LargeNumber& base, const LargeNumber& exponent, const LargeNumber& modulus);
     LargeNumber inverse(LargeNumber input, LargeNumber modulus);
 }
+
+struct LargeNumberArray {
+    LargeNumber result;
+    LargeNumber count;
+};
 
 class BigInteger {
 private:
@@ -81,7 +81,9 @@ namespace ConversionOperations {
     std::string convertDecimalToHexBigEndian(LargeNumber decimal);
 };
 
-int findIndex(const std::vector<std::string>& vec, const std::string& target);
+namespace Utils {
+    int findIndex(const std::vector<std::string>& vec, const std::string& target);
+};
 
 int main(int argc, char** argv) {
     if (argc < 3) {
@@ -104,7 +106,7 @@ int main(int argc, char** argv) {
     return 0;
 }
 
-int findIndex(const std::vector<std::string>& vec, const std::string& target) {
+int Utils::findIndex(const std::vector<std::string>& vec, const std::string& target) {
     auto it = std::find(vec.begin(), vec.end(), target);
     if (it != vec.end())
         return std::distance(vec.begin(), it);
@@ -635,6 +637,6 @@ void IOHandler::writeOutput(const std::vector<std::string>& m, const std::vector
     for (const auto& mi : m) {
         LargeNumber m_tmp = ConversionOperations::convertStringToLargeNumber(mi);
         LargeNumber res = LargeNumberSpecialOperations::modularExponentiation(m_tmp, e_tmp, N_tmp);
-        output << findIndex(c, ConversionOperations::convertDecimalToHexBigEndian(res)) << ' ';
+        output << Utils::findIndex(c, ConversionOperations::convertDecimalToHexBigEndian(res)) << ' ';
     }
 }
