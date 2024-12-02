@@ -9,6 +9,10 @@ namespace IOHandler {
     void writeOutput(const std::vector<std::string>& m, const std::vector<std::string>& c, const std::string& N, const std::string& e, std::ofstream& output);
 };
 
+namespace Utils {
+    int findIndex(const std::vector<std::string>& vec, const std::string& target);
+};
+
 struct LargeNumber {
     static const size_t MAX_DIGITS = 309;
     std::vector<int> digits = std::vector<int>(MAX_DIGITS, 0);
@@ -76,13 +80,9 @@ public:
 };
 
 namespace ConversionOperations {
-    LargeNumber convertStringToLargeNumber(std::string str);
+    LargeNumber convertStringToLargeNumber(const std::string& str);
     BigInteger convertHexBigEndianToDecimal(std::string hexVal);
     std::string convertDecimalToHexBigEndian(LargeNumber decimal);
-};
-
-namespace Utils {
-    int findIndex(const std::vector<std::string>& vec, const std::string& target);
 };
 
 int main(int argc, char** argv) {
@@ -565,23 +565,23 @@ bool operator<(const BigInteger& a, const BigInteger& b) {
     return false;
 }
 
-LargeNumber ConversionOperations::convertStringToLargeNumber(std::string str) {
+LargeNumber ConversionOperations::convertStringToLargeNumber(const std::string& str) {
     LargeNumber final;
-    bool neg = (str[0] == '-');
-    if (neg) str.erase(0, 1);
-    reverse(begin(str), end(str));
-    int val = 0, itr = 1, Out = 0;
-    for (char c : str) {
-        val += (c - '0') * itr;
-        itr *= 10;
-        if (itr == 100) {
-            final.digits[Out++] = val;
-            itr = 1;
+    std::string temp = str;
+    final.is_negative = (temp[0] == '-');
+    if (final.is_negative) temp.erase(0, 1);
+    std::reverse(temp.begin(), temp.end());
+    int val = 0, multiplier = 1, digit_index = 0;
+    for (char c : temp) {
+        val += (c - '0') * multiplier;
+        multiplier *= 10;
+        if (multiplier == 100) {
+            final.digits[digit_index++] = val;
             val = 0;
+            multiplier = 1;
         }
     }
-    if (val) final.digits[Out] = val;
-    final.is_negative = neg;
+    if (val > 0) final.digits[digit_index] = val;
     return final;
 }
 
