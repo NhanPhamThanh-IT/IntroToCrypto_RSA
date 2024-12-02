@@ -4,10 +4,9 @@
 #include <algorithm>
 #include <vector>
 
-#define MAX_DIGITS 309
-
 struct LargeNumber
 {
+    static const size_t MAX_DIGITS = 309;
     std::vector<int> digits;
     bool is_negative = false;
     LargeNumber() : digits(MAX_DIGITS, 0) {}
@@ -26,21 +25,27 @@ struct LargeNumberArray
     LargeNumber count;
 };
 
-class LargeNumberOperations
-{
-public:
-    LargeNumber convertStringToLargeNumber(std::string& str);
+namespace LargeNumberConversion {
     LargeNumber copyLargeNumber(const LargeNumber& number);
-    LargeNumber addLeadingDigit(const LargeNumber& number, int value);
+    LargeNumber addLeadingDigit(const LargeNumber& number, int digit);
     bool isEqualToZero(const LargeNumber& number);
+}
+
+namespace LargeNumberArithmetic {
     LargeNumber addLargeNumbers(LargeNumber first, LargeNumber second);
     LargeNumber subtractLargeNumbers(LargeNumber minuend, LargeNumber subtrahend);
     LargeNumber multiplyLargeNumbers(LargeNumber first, LargeNumber second);
     DivisionResult divideBySmallNumber(LargeNumber dividend, LargeNumber divisor);
     DivisionResult divideByLargeNumber(LargeNumber dividend, LargeNumber divisor);
+}
+
+namespace LargeNumberSpecialOperations {
     LargeNumber modularExponentiation(const LargeNumber& base, const LargeNumber& exponent, const LargeNumber& modulus);
+}
+
+namespace LargeNumberChecking {
     bool isPrimeNumber(const LargeNumber& number);
-};
+}
 
 class BigInteger {
 private:
@@ -73,10 +78,12 @@ public:
     friend bool operator<(const BigInteger&, const BigInteger&);
 };
 
-BigInteger convertHexToDecimal(std::string hexValue);
+namespace ConversionOperations {
+    LargeNumber convertStringToLargeNumber(std::string& str);
+    BigInteger convertHexToDecimal(std::string hexValue);
+}
 
 int main(int argc, char** argv) {
-    LargeNumberOperations numberOperations;
     std::string hexInput;
     int outputResult;
     BigInteger decimalValue;
@@ -86,12 +93,12 @@ int main(int argc, char** argv) {
         std::ifstream inputTestFile(argv[1]);
         inputTestFile >> hexInput;
         inputTestFile.close();
-        decimalValue = convertHexToDecimal(hexInput);
+        decimalValue = ConversionOperations::convertHexToDecimal(hexInput);
         LargeNumber largeNumber;
         std::string largeNumberStr = decimalValue.toString();
-        largeNumber = numberOperations.convertStringToLargeNumber(largeNumberStr);
+        largeNumber = ConversionOperations::convertStringToLargeNumber(largeNumberStr);
         int result;
-        result = numberOperations.isPrimeNumber(largeNumber);
+        result = LargeNumberChecking::isPrimeNumber(largeNumber);
         std::ofstream outputTestFile(argv[2]);
         outputTestFile << result;
         outputTestFile.close();
@@ -99,77 +106,35 @@ int main(int argc, char** argv) {
     return 0;
 }
 
-BigInteger convertHexToDecimal(std::string hexValue)
-{
-    std::reverse(hexValue.begin(), hexValue.end());
-    int length = hexValue.size();
-    BigInteger base("1");
-    BigInteger decimalValue("0");
-    for (int i = 0; i < length; i++)
-    {
-        if (hexValue[i] >= '0' && hexValue[i] <= '9')
-        {
-            decimalValue += (hexValue[i] - '0') * base;
-            base = base * 16;
-        }
-        else if (hexValue[i] >= 'A' && hexValue[i] <= 'F')
-        {
-            decimalValue += (hexValue[i] - '7') * base;
-            base = base * 16;
-        }
-    }
-    return decimalValue;
-}
-
-LargeNumber LargeNumberOperations::convertStringToLargeNumber(std::string& str) {
-    LargeNumber final;
-    bool neg = (str[0] == '-');
-    if (neg) str.erase(0, 1);
-    reverse(begin(str), end(str));
-    int val = 0, itr = 1, Out = 0;
-    for (char c : str) {
-        val += (c - '0') * itr;
-        itr *= 10;
-        if (itr == 100) {
-            final.digits[Out++] = val;
-            itr = 1;
-            val = 0;
-        }
-    }
-    if (val) final.digits[Out] = val;
-    final.is_negative = neg;
-    return final;
-}
-
-LargeNumber LargeNumberOperations::copyLargeNumber(const LargeNumber& number) {
+LargeNumber LargeNumberConversion::copyLargeNumber(const LargeNumber& number) {
     LargeNumber Result;
     Result.is_negative = number.is_negative;
-    for (int i = 0; i < MAX_DIGITS; i++)
+    for (int i = 0; i < Result.MAX_DIGITS; i++)
         Result.digits[i] = number.digits[i];
     return Result;
 }
 
-LargeNumber LargeNumberOperations::addLeadingDigit(const LargeNumber& number, int value) {
+LargeNumber LargeNumberConversion::addLeadingDigit(const LargeNumber& number, int digit) {
     LargeNumber Result = number;
     Result.is_negative = number.is_negative;
-    for (int i = MAX_DIGITS - 1; i > 0; --i)
+    for (int i = Result.MAX_DIGITS - 1; i > 0; --i)
         Result.digits[i] = Result.digits[i - 1];
-    Result.digits[0] = value;
+    Result.digits[0] = digit;
     return Result;
 }
 
-bool LargeNumberOperations::isEqualToZero(const LargeNumber& number)
+bool LargeNumberConversion::isEqualToZero(const LargeNumber& number)
 {
-    for (int i = 0; i < MAX_DIGITS; i++)
+    for (int i = 0; i < number.MAX_DIGITS; i++)
         if (number.digits[i] != 0)
             return false;
     return true;
 }
 
-LargeNumber LargeNumberOperations::addLargeNumbers(LargeNumber first, LargeNumber second)
+LargeNumber LargeNumberArithmetic::addLargeNumbers(LargeNumber first, LargeNumber second)
 {
-    if (isEqualToZero(first)) return second;
-    if (isEqualToZero(second)) return first;
+    if (LargeNumberConversion::isEqualToZero(first)) return second;
+    if (LargeNumberConversion::isEqualToZero(second)) return first;
     bool BothNegative = first.is_negative && second.is_negative;
     if (first.is_negative) {
         first.is_negative = false;
@@ -181,20 +146,20 @@ LargeNumber LargeNumberOperations::addLargeNumbers(LargeNumber first, LargeNumbe
     }
     LargeNumber Result;
     int carry = 0;
-    for (int i = 0; i < MAX_DIGITS; i++) {
+    for (int i = 0; i < Result.MAX_DIGITS; i++) {
         int sum = first.digits[i] + second.digits[i] + carry;
         Result.digits[i] = sum % 100;
         carry = sum / 100;
     }
-    if (carry) Result.digits[MAX_DIGITS - 1] = carry;
+    if (carry) Result.digits[Result.MAX_DIGITS - 1] = carry;
     Result.is_negative = BothNegative;
     return Result;
 }
 
-LargeNumber LargeNumberOperations::subtractLargeNumbers(LargeNumber minuend, LargeNumber subtrahend)
+LargeNumber LargeNumberArithmetic::subtractLargeNumbers(LargeNumber minuend, LargeNumber subtrahend)
 {
-    if (isEqualToZero(subtrahend)) return minuend;
-    if (isEqualToZero(minuend)) { subtrahend.is_negative = true; return subtrahend; }
+    if (LargeNumberConversion::isEqualToZero(subtrahend)) return minuend;
+    if (LargeNumberConversion::isEqualToZero(minuend)) { subtrahend.is_negative = true; return subtrahend; }
     if (subtrahend.is_negative) {
         if (minuend.is_negative) { minuend.is_negative = subtrahend.is_negative = false; return subtractLargeNumbers(subtrahend, minuend); }
         subtrahend.is_negative = false;
@@ -203,7 +168,7 @@ LargeNumber LargeNumberOperations::subtractLargeNumbers(LargeNumber minuend, Lar
     if (minuend.is_negative) { minuend.is_negative = subtrahend.is_negative = false; LargeNumber result = addLargeNumbers(minuend, subtrahend); result.is_negative = true; return result; }
     LargeNumber Result = minuend;
     bool borrow = false;
-    for (int i = 0; i < MAX_DIGITS; i++) {
+    for (int i = 0; i < Result.MAX_DIGITS; i++) {
         int diff = Result.digits[i] - subtrahend.digits[i] - borrow;
         if (diff < 0) { diff += 100; borrow = true; } else borrow = false;
         Result.digits[i] = diff;
@@ -212,21 +177,21 @@ LargeNumber LargeNumberOperations::subtractLargeNumbers(LargeNumber minuend, Lar
     return Result;
 }
 
-LargeNumber LargeNumberOperations::multiplyLargeNumbers(LargeNumber first, LargeNumber second)
+LargeNumber LargeNumberArithmetic::multiplyLargeNumbers(LargeNumber first, LargeNumber second)
 {
-    if (isEqualToZero(first) || isEqualToZero(second)) return LargeNumber();
+    if (LargeNumberConversion::isEqualToZero(first) || LargeNumberConversion::isEqualToZero(second)) return LargeNumber();
     bool neg = first.is_negative ^ second.is_negative;
     first.is_negative = second.is_negative = false;
     LargeNumber Result;
-    for (int i = 0; i < MAX_DIGITS; i++) {
+    for (int i = 0; i < Result.MAX_DIGITS; i++) {
         LargeNumber temp;
         int carry = 0;
-        for (int j = 0; j < MAX_DIGITS; j++) {
+        for (int j = 0; j < Result.MAX_DIGITS; j++) {
             int val = first.digits[i] * second.digits[j] + carry;
             carry = val / 100;
             temp.digits[j] += val % 100;
         }
-        for (int k = MAX_DIGITS - 1; k >= i; k--)
+        for (int k = Result.MAX_DIGITS- 1; k >= i; k--)
             temp.digits[k] = temp.digits[k - i];
         for (int k = 0; k < i; k++) temp.digits[k] = 0;
         Result = addLargeNumbers(Result, temp);
@@ -235,10 +200,10 @@ LargeNumber LargeNumberOperations::multiplyLargeNumbers(LargeNumber first, Large
     return Result;
 }
 
-DivisionResult LargeNumberOperations::divideBySmallNumber(LargeNumber dividend, LargeNumber divisor)
+DivisionResult LargeNumberArithmetic::divideBySmallNumber(LargeNumber dividend, LargeNumber divisor)
 {
     DivisionResult Result;
-    if (isEqualToZero(dividend))
+    if (LargeNumberConversion::isEqualToZero(dividend))
     {
         Result.quotient = dividend;
         Result.remainder = dividend;
@@ -267,11 +232,11 @@ DivisionResult LargeNumberOperations::divideBySmallNumber(LargeNumber dividend, 
     return Result;
 }
 
-DivisionResult LargeNumberOperations::divideByLargeNumber(LargeNumber dividend, LargeNumber divisor)
+DivisionResult LargeNumberArithmetic::divideByLargeNumber(LargeNumber dividend, LargeNumber divisor)
 {
     DivisionResult Result, tempResult;
     LargeNumber partOffirst, test;
-    if (isEqualToZero(dividend))
+    if (LargeNumberConversion::isEqualToZero(dividend))
     {
         Result.quotient = dividend;
         Result.remainder = dividend;
@@ -298,7 +263,7 @@ DivisionResult LargeNumberOperations::divideByLargeNumber(LargeNumber dividend, 
     {
         do
         {
-            partOffirst = addLeadingDigit(partOffirst, dividend.digits[i]);
+            partOffirst = LargeNumberConversion::addLeadingDigit(partOffirst, dividend.digits[i]);
             test = subtractLargeNumbers(partOffirst, divisor);
             i++;
         } while (test.is_negative && i != 309);
@@ -312,64 +277,64 @@ DivisionResult LargeNumberOperations::divideByLargeNumber(LargeNumber dividend, 
     return Result;
 }
 
-LargeNumber LargeNumberOperations::modularExponentiation(const LargeNumber& base, const LargeNumber& exponent, const LargeNumber& modulus) {
-    if (isEqualToZero(base)) return base;
-    if (isEqualToZero(exponent)) {
+LargeNumber LargeNumberSpecialOperations::modularExponentiation(const LargeNumber& base, const LargeNumber& exponent, const LargeNumber& modulus) {
+    if (LargeNumberConversion::isEqualToZero(base)) return base;
+    if (LargeNumberConversion::isEqualToZero(exponent)) {
         LargeNumber result;
         result.digits[0] = 1;
         return result;
     }
     LargeNumber Result, Base, Exp;
     Result.digits[0] = 1;
-    Base = copyLargeNumber(base);
-    Exp = copyLargeNumber(exponent);
-    DivisionResult DR = divideByLargeNumber(Base, modulus);
+    Base = LargeNumberConversion::copyLargeNumber(base);
+    Exp = LargeNumberConversion::copyLargeNumber(exponent);
+    DivisionResult DR = LargeNumberArithmetic::divideByLargeNumber(Base, modulus);
     Base = DR.remainder;
-    while (!isEqualToZero(Exp)) {
+    while (!LargeNumberConversion::isEqualToZero(Exp)) {
         if (Exp.digits[0] % 2 == 1) {
-            Result = multiplyLargeNumbers(Result, Base);
-            DR = divideByLargeNumber(Result, modulus);
+            Result = LargeNumberArithmetic::multiplyLargeNumbers(Result, Base);
+            DR = LargeNumberArithmetic::divideByLargeNumber(Result, modulus);
             Result = DR.remainder;
         }
-        Base = multiplyLargeNumbers(Base, Base);
-        DR = divideByLargeNumber(Base, modulus);
+        Base = LargeNumberArithmetic::multiplyLargeNumbers(Base, Base);
+        DR = LargeNumberArithmetic::divideByLargeNumber(Base, modulus);
         Base = DR.remainder;
-        Exp = divideByLargeNumber(Exp, LargeNumber({2})).quotient;
+        Exp = LargeNumberArithmetic::divideByLargeNumber(Exp, LargeNumber({2})).quotient;
     }
     return Result;
 }
 
-bool LargeNumberOperations::isPrimeNumber(const LargeNumber& inputNumber) {
-    LargeNumber number = copyLargeNumber(inputNumber);
+bool LargeNumberChecking::isPrimeNumber(const LargeNumber& inputNumber) {
+    LargeNumber number = LargeNumberConversion::copyLargeNumber(inputNumber);
     LargeNumber one, two, base, numberMinusOne, exponentK, calcResult, remainder;
     one.digits[0] = 1;
     two.digits[0] = 2;
     base.digits[0] = 2;
-    if (subtractLargeNumbers(number, base).is_negative)
+    if (LargeNumberArithmetic::subtractLargeNumbers(number, base).is_negative)
         return false;
-    DivisionResult divisionResult = divideByLargeNumber(number, two);
-    if (isEqualToZero(divisionResult.remainder))
+    DivisionResult divisionResult = LargeNumberArithmetic::divideByLargeNumber(number, two);
+    if (LargeNumberConversion::isEqualToZero(divisionResult.remainder))
         return false;
-    numberMinusOne = subtractLargeNumbers(number, one);
+    numberMinusOne = LargeNumberArithmetic::subtractLargeNumbers(number, one);
     exponentK.digits[0] = 0;
-    while (!isEqualToZero(divideByLargeNumber(numberMinusOne, two).remainder)) {
-        numberMinusOne = divideByLargeNumber(numberMinusOne, two).quotient;
+    while (!LargeNumberConversion::isEqualToZero(LargeNumberArithmetic::divideByLargeNumber(numberMinusOne, two).remainder)) {
+        numberMinusOne = LargeNumberArithmetic::divideByLargeNumber(numberMinusOne, two).quotient;
         exponentK.digits[0]++;
     }
-    calcResult = modularExponentiation(base, numberMinusOne, number);
-    divisionResult = divideByLargeNumber(calcResult, number);
-    if (isEqualToZero(subtractLargeNumbers(divisionResult.remainder, one)) || 
-        isEqualToZero(subtractLargeNumbers(divisionResult.remainder, numberMinusOne)))
+    calcResult = LargeNumberSpecialOperations::modularExponentiation(base, numberMinusOne, number);
+    divisionResult = LargeNumberArithmetic::divideByLargeNumber(calcResult, number);
+    if (LargeNumberConversion::isEqualToZero(LargeNumberArithmetic::subtractLargeNumbers(divisionResult.remainder, one)) || 
+        LargeNumberConversion::isEqualToZero(LargeNumberArithmetic::subtractLargeNumbers(divisionResult.remainder, numberMinusOne)))
         return true;
     LargeNumber currentExponent = one;
-    while (!isEqualToZero(subtractLargeNumbers(exponentK, currentExponent))) {
-        calcResult = modularExponentiation(calcResult, two, number);
-        divisionResult = divideByLargeNumber(calcResult, number);
-        if (isEqualToZero(subtractLargeNumbers(divisionResult.remainder, one)))
+    while (!LargeNumberConversion::isEqualToZero(LargeNumberArithmetic::subtractLargeNumbers(exponentK, currentExponent))) {
+        calcResult = LargeNumberSpecialOperations::modularExponentiation(calcResult, two, number);
+        divisionResult = LargeNumberArithmetic::divideByLargeNumber(calcResult, number);
+        if (LargeNumberConversion::isEqualToZero(LargeNumberArithmetic::subtractLargeNumbers(divisionResult.remainder, one)))
             return false;
-        if (isEqualToZero(subtractLargeNumbers(divisionResult.remainder, numberMinusOne)))
+        if (LargeNumberConversion::isEqualToZero(LargeNumberArithmetic::subtractLargeNumbers(divisionResult.remainder, numberMinusOne)))
             return true;
-        currentExponent = addLargeNumbers(currentExponent, one);
+        currentExponent = LargeNumberArithmetic::addLargeNumbers(currentExponent, one);
     }
     return false;
 }
@@ -602,4 +567,46 @@ bool operator<(const BigInteger& a, const BigInteger& b) {
         if (a.digits[i] != b.digits[i])
             return a.digits[i] < b.digits[i];
     return false;
+}
+
+BigInteger ConversionOperations::convertHexToDecimal(std::string hexValue)
+{
+    std::reverse(hexValue.begin(), hexValue.end());
+    int length = hexValue.size();
+    BigInteger base("1");
+    BigInteger decimalValue("0");
+    for (int i = 0; i < length; i++)
+    {
+        if (hexValue[i] >= '0' && hexValue[i] <= '9')
+        {
+            decimalValue += (hexValue[i] - '0') * base;
+            base = base * 16;
+        }
+        else if (hexValue[i] >= 'A' && hexValue[i] <= 'F')
+        {
+            decimalValue += (hexValue[i] - '7') * base;
+            base = base * 16;
+        }
+    }
+    return decimalValue;
+}
+
+LargeNumber ConversionOperations::convertStringToLargeNumber(std::string& str) {
+    LargeNumber final;
+    bool neg = (str[0] == '-');
+    if (neg) str.erase(0, 1);
+    reverse(begin(str), end(str));
+    int val = 0, itr = 1, Out = 0;
+    for (char c : str) {
+        val += (c - '0') * itr;
+        itr *= 10;
+        if (itr == 100) {
+            final.digits[Out++] = val;
+            itr = 1;
+            val = 0;
+        }
+    }
+    if (val) final.digits[Out] = val;
+    final.is_negative = neg;
+    return final;
 }
