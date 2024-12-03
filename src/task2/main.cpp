@@ -4,14 +4,12 @@
 #include <algorithm>
 #include <vector>
 
-namespace IOHandler
-{
+namespace IOHandler {
     std::vector<std::string> readInputFile(const std::string &filePath);
     bool writeOutputFile(const std::string &filePath, const std::string &content);
 };
 
-namespace HelperFunctions
-{
+namespace HelperFunctions {
     bool validateFile(const std::string &filename);
     bool isHexadecimal(const std::string &str);
     bool areHexadecimal(const std::vector<std::string> &values);
@@ -56,7 +54,6 @@ namespace LargeNumberArithmetic
 
 namespace LargeNumberSpecialOperations
 {
-    LargeNumber modularExponentiation(const LargeNumber &base, const LargeNumber &exponent, const LargeNumber &modulus);
     LargeNumber inverse(LargeNumber input, LargeNumber modulus);
 }
 
@@ -70,7 +67,6 @@ class BigInteger
 {
 private:
     std::string digits;
-
 public:
     BigInteger(std::string &);
     BigInteger(BigInteger &);
@@ -114,23 +110,19 @@ int main(int argc, char **argv)
         std::cerr << "Usage: <input_file> <output_file>" << std::endl;
         return 1;
     }
-
     const std::string inputFile = argv[1];
     const std::string outputFile = argv[2];
-
     if (!HelperFunctions::validateFile(inputFile))
     {
         std::cerr << "Error: Invalid input file!" << std::endl;
         return 1;
     }
-
     std::vector<std::string> hexValues = IOHandler::readInputFile(inputFile);
     if (hexValues.size() != 3 || !HelperFunctions::areHexadecimal(hexValues))
     {
         std::cerr << "Error: Non-hexadecimal or incomplete input values!" << std::endl;
         return 1;
     }
-
     try
     {
         LargeNumber D = HandlerLargeNumbers::processLargeNumbers(hexValues[0], hexValues[1], hexValues[2]);
@@ -146,7 +138,6 @@ int main(int argc, char **argv)
         std::cerr << "Error: " << e.what() << std::endl;
         return 1;
     }
-
     return 0;
 }
 
@@ -160,8 +151,7 @@ std::vector<std::string> IOHandler::readInputFile(const std::string &filePath)
 {
     std::ifstream file(filePath);
     std::vector<std::string> hexValues(3);
-    if (file)
-        file >> hexValues[0] >> hexValues[1] >> hexValues[2];
+    if (file) file >> hexValues[0] >> hexValues[1] >> hexValues[2];
     return hexValues;
 }
 
@@ -178,8 +168,7 @@ bool IOHandler::writeOutputFile(const std::string &filePath, const std::string &
 
 bool HelperFunctions::isHexadecimal(const std::string &str)
 {
-    return std::all_of(str.begin(), str.end(), [](char c)
-                       { return std::isxdigit(c); });
+    return std::all_of(str.begin(), str.end(), [](char c) { return std::isxdigit(c); });
 }
 
 bool HelperFunctions::areHexadecimal(const std::vector<std::string> &values)
@@ -191,8 +180,7 @@ LargeNumber LargeNumberConversion::copyLargeNumber(const LargeNumber &number)
 {
     LargeNumber Result;
     Result.is_negative = number.is_negative;
-    for (int i = 0; i < 309; i++)
-        Result.digits[i] = number.digits[i];
+    for (int i = 0; i < 309; i++) Result.digits[i] = number.digits[i];
     return Result;
 }
 
@@ -200,8 +188,7 @@ LargeNumber LargeNumberConversion::addLeadingDigit(const LargeNumber &number, in
 {
     LargeNumber Result = number;
     Result.is_negative = number.is_negative;
-    for (int i = 309 - 1; i > 0; --i)
-        Result.digits[i] = Result.digits[i - 1];
+    for (int i = 309 - 1; i > 0; --i) Result.digits[i] = Result.digits[i - 1];
     Result.digits[0] = digit;
     return Result;
 }
@@ -216,10 +203,8 @@ bool LargeNumberConversion::isEqualToZero(const LargeNumber &number)
 
 LargeNumber LargeNumberArithmetic::addLargeNumbers(LargeNumber first, LargeNumber second)
 {
-    if (LargeNumberConversion::isEqualToZero(first))
-        return second;
-    if (LargeNumberConversion::isEqualToZero(second))
-        return first;
+    if (LargeNumberConversion::isEqualToZero(first)) return second;
+    if (LargeNumberConversion::isEqualToZero(second)) return first;
     bool BothNegative = first.is_negative && second.is_negative;
     if (first.is_negative)
     {
@@ -233,22 +218,20 @@ LargeNumber LargeNumberArithmetic::addLargeNumbers(LargeNumber first, LargeNumbe
     }
     LargeNumber Result;
     int carry = 0;
-    for (int i = 0; i < 309; i++)
+    for (int i = 0; i < Result.MAX_DIGITS; i++)
     {
         int sum = first.digits[i] + second.digits[i] + carry;
         Result.digits[i] = sum % 100;
         carry = sum / 100;
     }
-    if (carry)
-        Result.digits[309 - 1] = carry;
+    if (carry) Result.digits[Result.MAX_DIGITS - 1] = carry;
     Result.is_negative = BothNegative;
     return Result;
 }
 
 LargeNumber LargeNumberArithmetic::subtractLargeNumbers(LargeNumber minuend, LargeNumber subtrahend)
 {
-    if (LargeNumberConversion::isEqualToZero(subtrahend))
-        return minuend;
+    if (LargeNumberConversion::isEqualToZero(subtrahend)) return minuend;
     if (LargeNumberConversion::isEqualToZero(minuend))
     {
         subtrahend.is_negative = true;
@@ -337,18 +320,15 @@ DivisionResult LargeNumberArithmetic::divideBySmallNumber(LargeNumber dividend, 
     {
         tempResult = subtractLargeNumbers(tempResult, divisor);
         CheckNeg = tempResult.is_negative;
-        if (countArray.digits[0] != 99)
-            countArray.digits[0] = countArray.digits[0] + 1;
-        else
-            countArray = addLargeNumbers(countArray, One);
+        if (countArray.digits[0] != 99) countArray.digits[0] = countArray.digits[0] + 1;
+        else countArray = addLargeNumbers(countArray, One);
     } while (!CheckNeg);
     if (countArray.digits[0] != 0)
     {
         countArray.digits[0] = countArray.digits[0] - 1;
         Result.quotient = countArray;
     }
-    else
-        Result.quotient = subtractLargeNumbers(countArray, One);
+    else Result.quotient = subtractLargeNumbers(countArray, One);
     Result.remainder = addLargeNumbers(tempResult, divisor);
     return Result;
 }
@@ -380,10 +360,8 @@ DivisionResult LargeNumberArithmetic::divideByLargeNumber(LargeNumber dividend, 
     }
     std::reverse(std::begin(dividend.digits), std::end(dividend.digits));
     int i = 0;
-    while (i != 309)
-    {
-        do
-        {
+    while (i != 309) {
+        do {
             partOffirst = LargeNumberConversion::addLeadingDigit(partOffirst, dividend.digits[i]);
             test = subtractLargeNumbers(partOffirst, divisor);
             i++;
@@ -395,40 +373,6 @@ DivisionResult LargeNumberArithmetic::divideByLargeNumber(LargeNumber dividend, 
     Result.remainder = partOffirst;
     Result.remainder.is_negative = neg;
     Result.quotient.is_negative = neg;
-    return Result;
-}
-
-LargeNumber LargeNumberSpecialOperations::modularExponentiation(const LargeNumber &base, const LargeNumber &exponent, const LargeNumber &modulus)
-{
-    if (LargeNumberConversion::isEqualToZero(base))
-        return base;
-    if (LargeNumberConversion::isEqualToZero(exponent))
-    {
-        LargeNumber result;
-        result.digits[0] = 1;
-        return result;
-    }
-    LargeNumber Result, Base, Exp;
-    Result.digits[0] = 1;
-    Base = LargeNumberConversion::copyLargeNumber(base);
-    Exp = LargeNumberConversion::copyLargeNumber(exponent);
-    DivisionResult DR = LargeNumberArithmetic::divideByLargeNumber(Base, modulus);
-    Base = DR.remainder;
-    while (!LargeNumberConversion::isEqualToZero(Exp))
-    {
-        if (Exp.digits[0] % 2 == 1)
-        {
-            Result = LargeNumberArithmetic::multiplyLargeNumbers(Result, Base);
-            DR = LargeNumberArithmetic::divideByLargeNumber(Result, modulus);
-            Result = DR.remainder;
-        }
-        Base = LargeNumberArithmetic::multiplyLargeNumbers(Base, Base);
-        DR = LargeNumberArithmetic::divideByLargeNumber(Base, modulus);
-        Base = DR.remainder;
-        LargeNumber tmp;
-        tmp.digits[0] = 2;
-        Exp = LargeNumberArithmetic::divideByLargeNumber(Exp, tmp).quotient;
-    }
     return Result;
 }
 
@@ -514,19 +458,12 @@ LargeNumber LargeNumberSpecialOperations::inverse(LargeNumber input, LargeNumber
 
 LargeNumber HandlerLargeNumbers::processLargeNumbers(const std::string &hexP, const std::string &hexQ, const std::string &hexE)
 {
-    LargeNumber P = ConversionOperations::convertStringToLargeNumber(
-        ConversionOperations::convertHexBigEndianToDecimal(hexP).toString());
-    LargeNumber Q = ConversionOperations::convertStringToLargeNumber(
-        ConversionOperations::convertHexBigEndianToDecimal(hexQ).toString());
-    LargeNumber E = ConversionOperations::convertStringToLargeNumber(
-        ConversionOperations::convertHexBigEndianToDecimal(hexE).toString());
-
+    LargeNumber P = ConversionOperations::convertStringToLargeNumber(ConversionOperations::convertHexBigEndianToDecimal(hexP).toString());
+    LargeNumber Q = ConversionOperations::convertStringToLargeNumber(ConversionOperations::convertHexBigEndianToDecimal(hexQ).toString());
+    LargeNumber E = ConversionOperations::convertStringToLargeNumber(ConversionOperations::convertHexBigEndianToDecimal(hexE).toString());
     LargeNumber One;
     One.digits[0] = 1;
-
-    LargeNumber Phi = LargeNumberArithmetic::multiplyLargeNumbers(
-        LargeNumberArithmetic::subtractLargeNumbers(P, One),
-        LargeNumberArithmetic::subtractLargeNumbers(Q, One));
+    LargeNumber Phi = LargeNumberArithmetic::multiplyLargeNumbers(LargeNumberArithmetic::subtractLargeNumbers(P, One),LargeNumberArithmetic::subtractLargeNumbers(Q, One));
     return LargeNumberSpecialOperations::inverse(E, Phi);
 }
 
@@ -541,17 +478,14 @@ BigInteger::BigInteger(std::string &s)
     int n = s.size();
     for (int i = n - 1; i >= 0; i--)
     {
-        if (!isdigit(s[i]))
-            throw("ERROR CONVERT");
-        else
-            digits.push_back(s[i] - '0');
+        if (!isdigit(s[i])) throw("ERROR CONVERT");
+        else digits.push_back(s[i] - '0');
     }
 }
 
 BigInteger::BigInteger(unsigned long long numConvert)
 {
-    do
-    {
+    do {
         digits.push_back(numConvert % 10);
         numConvert /= 10;
     } while (numConvert != 0);
@@ -563,10 +497,8 @@ BigInteger::BigInteger(const char *s)
     digits = "";
     for (int i = str.length() - 1; i >= 0; i--)
     {
-        if (!isdigit(s[i]))
-            throw("ERROR CONVERT");
-        else
-            digits.push_back(s[i] - '0');
+        if (!isdigit(s[i])) throw("ERROR CONVERT");
+        else digits.push_back(s[i] - '0');
     }
 }
 
@@ -587,8 +519,7 @@ bool Null(const BigInteger &a)
 
 int BigInteger::operator[](const int index) const
 {
-    if (digits.size() <= index || index < 0)
-        throw("ERROR");
+    if (digits.size() <= index || index < 0) throw("ERROR");
     return digits[index];
 }
 
@@ -601,12 +532,9 @@ BigInteger &BigInteger::operator=(const BigInteger &a)
 BigInteger &BigInteger::operator++()
 {
     int i, n = digits.size();
-    for (i = 0; i < n && digits[i] == 9; i++)
-        digits[i] = 0;
-    if (i == n)
-        digits.push_back(1);
-    else
-        digits[i]++;
+    for (i = 0; i < n && digits[i] == 9; i++) digits[i] = 0;
+    if (i == n) digits.push_back(1);
+    else digits[i]++;
     return *this;
 }
 
@@ -622,8 +550,7 @@ BigInteger &operator+=(BigInteger &a, const BigInteger &b)
 {
     int carry = 0, sum;
     size_t n = a.digits.size(), m = b.digits.size();
-    if (m > n)
-        a.digits.resize(m, 0);
+    if (m > n) a.digits.resize(m, 0);
     for (size_t i = 0; i < m || carry; ++i)
     {
         if (i == a.digits.size())
@@ -644,14 +571,11 @@ BigInteger operator+(const BigInteger &a, const BigInteger &b)
 
 BigInteger &BigInteger::operator--()
 {
-    if (digits[0] == 0 && digits.size() == 1)
-        throw("UNDERFLOW");
+    if (digits[0] == 0 && digits.size() == 1) throw("UNDERFLOW");
     int i, n = digits.size();
-    for (i = 0; digits[i] == 0 && i < n; i++)
-        digits[i] = 9;
+    for (i = 0; digits[i] == 0 && i < n; i++) digits[i] = 9;
     digits[i]--;
-    if (n > 1 && digits[n - 1] == 0)
-        digits.pop_back();
+    if (n > 1 && digits[n - 1] == 0) digits.pop_back();
     return *this;
 }
 
@@ -665,8 +589,7 @@ BigInteger BigInteger::operator--(int temp)
 
 BigInteger &operator-=(BigInteger &a, const BigInteger &b)
 {
-    if (a < b)
-        throw("UNDERFLOW");
+    if (a < b) throw("UNDERFLOW");
     int n = a.digits.size(), m = b.digits.size(), t = 0;
     for (int i = 0; i < n; i++)
     {
@@ -674,8 +597,7 @@ BigInteger &operator-=(BigInteger &a, const BigInteger &b)
         t = s < 0 ? -1 : 0;
         a.digits[i] = s < 0 ? s + 10 : s;
     }
-    while (n > 1 && a.digits[n - 1] == 0)
-        a.digits.pop_back(), n--;
+    while (n > 1 && a.digits[n - 1] == 0) a.digits.pop_back(), n--;
     return a;
 }
 
@@ -715,8 +637,7 @@ BigInteger &operator*=(BigInteger &a, const BigInteger &b)
         a.digits[i] = v[i] % 10;
         carry = v[i] / 10;
     }
-    while (a.digits.size() > 1 && a.digits.back() == 0)
-        a.digits.pop_back();
+    while (a.digits.size() > 1 && a.digits.back() == 0) a.digits.pop_back();
     return a;
 }
 
