@@ -33,7 +33,7 @@ struct DivisionResult
 namespace HandlerLargeNumbers
 {
     LargeNumber processLargeNumbers(const std::string &hexP, const std::string &hexQ, const std::string &hexE);
-    std::string formatLargeNumber(const LargeNumber &data);
+    std::string formatLargeNumber(const LargeNumber &number);
 }
 
 namespace LargeNumberConversion
@@ -54,7 +54,7 @@ namespace LargeNumberArithmetic
 
 namespace LargeNumberSpecialOperations
 {
-    LargeNumber inverse(LargeNumber input, LargeNumber modulus);
+    LargeNumber inverse(LargeNumber number, LargeNumber modulus);
 }
 
 struct LargeNumberArray
@@ -416,14 +416,14 @@ LargeNumber LargeNumberSpecialOperationsinverse(LargeNumber input, LargeNumber m
     return Result;
 }
 
-LargeNumber LargeNumberSpecialOperations::inverse(LargeNumber input, LargeNumber modulus)
+LargeNumber LargeNumberSpecialOperations::inverse(LargeNumber number, LargeNumber modulus)
 {
     LargeNumber Result, Q, A2, A3, B2, B3, T2, T3, Zero, One, temp;
     One.digits[0] = 1;
     A2 = LargeNumberConversion::copyLargeNumber(Zero);
     A3 = LargeNumberConversion::copyLargeNumber(modulus);
     B2 = LargeNumberConversion::copyLargeNumber(One);
-    B3 = LargeNumberConversion::copyLargeNumber(input);
+    B3 = LargeNumberConversion::copyLargeNumber(number);
     while (!LargeNumberConversion::isEqualToZero(B3) && !LargeNumberConversion::isEqualToZero(LargeNumberArithmetic::subtractLargeNumbers(B3, One)))
     {
         Q = LargeNumberArithmetic::divideByLargeNumber(A3, B3).quotient;
@@ -467,9 +467,9 @@ LargeNumber HandlerLargeNumbers::processLargeNumbers(const std::string &hexP, co
     return LargeNumberSpecialOperations::inverse(E, Phi);
 }
 
-std::string HandlerLargeNumbers::formatLargeNumber(const LargeNumber &data)
+std::string HandlerLargeNumbers::formatLargeNumber(const LargeNumber &number)
 {
-    return data.is_negative ? ConversionOperations::convertLargeNumberToString(data) : ConversionOperations::convertDecimalToHexBigEndian(data);
+    return number.is_negative ? ConversionOperations::convertLargeNumberToString(number) : ConversionOperations::convertDecimalToHexBigEndian(number);
 }
 
 BigInteger::BigInteger(std::string &s)

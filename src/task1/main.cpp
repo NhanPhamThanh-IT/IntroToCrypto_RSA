@@ -19,12 +19,6 @@ struct DivisionResult
     LargeNumber remainder;
 };
 
-struct LargeNumberArray
-{
-    LargeNumber result;
-    LargeNumber count;
-};
-
 namespace LargeNumberConversion
 {
     LargeNumber copyLargeNumber(const LargeNumber &number);
@@ -50,6 +44,12 @@ namespace LargeNumberChecking
 {
     bool isPrimeNumber(const LargeNumber &number);
 }
+
+struct LargeNumberArray
+{
+    LargeNumber result;
+    LargeNumber count;
+};
 
 class BigInteger
 {
