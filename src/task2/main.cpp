@@ -33,7 +33,7 @@ struct DivisionResult
 namespace HandlerLargeNumbers
 {
     LargeNumber processLargeNumbers(const std::string &hexP, const std::string &hexQ, const std::string &hexE);
-    std::string formatOutput(const LargeNumber &D);
+    std::string formatLargeNumber(const LargeNumber &data);
 }
 
 namespace LargeNumberConversion
@@ -100,7 +100,7 @@ namespace ConversionOperations
     LargeNumber convertStringToLargeNumber(const std::string &str);
     std::string convertDecimalToHexBigEndian(LargeNumber decimal);
     BigInteger convertHexBigEndianToDecimal(std::string hexVal);
-    std::string convertToString(LargeNumber input);
+    std::string convertLargeNumberToString(LargeNumber input);
 };
 
 int main(int argc, char **argv)
@@ -126,7 +126,7 @@ int main(int argc, char **argv)
     try
     {
         LargeNumber D = HandlerLargeNumbers::processLargeNumbers(hexValues[0], hexValues[1], hexValues[2]);
-        std::string output = HandlerLargeNumbers::formatOutput(D);
+        std::string output = HandlerLargeNumbers::formatLargeNumber(D);
         if (!IOHandler::writeOutputFile(outputFile, output))
         {
             std::cerr << "Error: Unable to write to output file!" << std::endl;
@@ -467,9 +467,9 @@ LargeNumber HandlerLargeNumbers::processLargeNumbers(const std::string &hexP, co
     return LargeNumberSpecialOperations::inverse(E, Phi);
 }
 
-std::string HandlerLargeNumbers::formatOutput(const LargeNumber &D)
+std::string HandlerLargeNumbers::formatLargeNumber(const LargeNumber &data)
 {
-    return D.is_negative ? ConversionOperations::convertToString(D) : ConversionOperations::convertDecimalToHexBigEndian(D);
+    return data.is_negative ? ConversionOperations::convertLargeNumberToString(data) : ConversionOperations::convertDecimalToHexBigEndian(data);
 }
 
 BigInteger::BigInteger(std::string &s)
@@ -804,7 +804,7 @@ BigInteger ConversionOperations::convertHexBigEndianToDecimal(std::string hexVal
     return dec_val;
 }
 
-std::string ConversionOperations::convertToString(LargeNumber input)
+std::string ConversionOperations::convertLargeNumberToString(LargeNumber input)
 {
     std::string out;
     if (input.is_negative)
