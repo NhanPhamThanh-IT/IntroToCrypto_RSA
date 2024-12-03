@@ -100,7 +100,7 @@ int main(int argc, char **argv)
 {
     if (argc < 3)
     {
-        std::cout << "Not enough Command Line Argument passed!";
+        std::cerr << "Usage: <input_file> <output_file>" << std::endl;
         return 1;
     }
     std::ifstream inputTest(argv[1]);
