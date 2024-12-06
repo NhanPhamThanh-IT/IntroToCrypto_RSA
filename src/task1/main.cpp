@@ -4,17 +4,24 @@
 #include <algorithm>
 #include <vector>
 
-namespace HelperFunctions {
-    bool validateFile(const std::string &filename);
-}
-
 struct LargeNumber
 {
     static const size_t MAX_DIGITS = 309;
-    std::vector<int> digits;
+    std::vector<int> digits = std::vector<int>(MAX_DIGITS, 0);
     bool is_negative = false;
     LargeNumber() : digits(MAX_DIGITS, 0) {}
-    LargeNumber(const std::vector<int> &input_digits) : digits(input_digits) {}
+};
+
+struct DivisionResult
+{
+    LargeNumber quotient;
+    LargeNumber remainder;
+};
+
+struct LargeNumberArray
+{
+    LargeNumber result;
+    LargeNumber count;
 };
 
 namespace LargeNumberConversion
@@ -23,12 +30,6 @@ namespace LargeNumberConversion
     LargeNumber addLeadingDigit(const LargeNumber &number, int digit);
     bool isEqualToZero(const LargeNumber &number);
 }
-
-struct DivisionResult
-{
-    LargeNumber quotient;
-    LargeNumber remainder;
-};
 
 namespace LargeNumberArithmetic
 {
@@ -49,16 +50,11 @@ namespace LargeNumberChecking
     bool isPrimeNumber(const LargeNumber &number);
 }
 
-struct LargeNumberArray
-{
-    LargeNumber result;
-    LargeNumber count;
-};
-
 class BigInteger
 {
 private:
     std::string digits;
+
 public:
     BigInteger(std::string &);
     BigInteger(BigInteger &);
@@ -95,34 +91,28 @@ namespace ConversionOperations
 
 int main(int argc, char **argv)
 {
-    if (argc < 3)
-    {
-        std::cerr << "Usage: <input_file> <output_file>" << std::endl;
-        return 1;
-    }
     std::string hexInput;
     int outputResult;
     BigInteger decimalValue;
     std::string testFileId;
-    std::ifstream inputTestFile(argv[1]);
-    inputTestFile >> hexInput;
-    inputTestFile.close();
-    decimalValue = ConversionOperations::convertHexToDecimal(hexInput);
-    LargeNumber largeNumber;
-    std::string largeNumberStr = decimalValue.toString();
-    largeNumber = ConversionOperations::convertStringToLargeNumber(largeNumberStr);
-    int result;
-    result = LargeNumberChecking::isPrimeNumber(largeNumber);
-    std::ofstream outputTestFile(argv[2]);
-    outputTestFile << result;
-    outputTestFile.close();
+    if (argc < 3)
+        std::cout << "Not enough Command Line Arguments passed!" << std::endl;
+    else
+    {
+        std::ifstream inputTestFile(argv[1]);
+        inputTestFile >> hexInput;
+        inputTestFile.close();
+        decimalValue = ConversionOperations::convertHexToDecimal(hexInput);
+        LargeNumber largeNumber;
+        std::string largeNumberStr = decimalValue.toString();
+        largeNumber = ConversionOperations::convertStringToLargeNumber(largeNumberStr);
+        int result;
+        result = LargeNumberChecking::isPrimeNumber(largeNumber);
+        std::ofstream outputTestFile(argv[2]);
+        outputTestFile << result;
+        outputTestFile.close();
+    }
     return 0;
-}
-
-bool HelperFunctions::validateFile(const std::string &filename)
-{
-    std::ifstream file(filename);
-    return file.good();
 }
 
 LargeNumber LargeNumberConversion::copyLargeNumber(const LargeNumber &number)
@@ -363,7 +353,9 @@ LargeNumber LargeNumberSpecialOperations::modularExponentiation(const LargeNumbe
         Base = LargeNumberArithmetic::multiplyLargeNumbers(Base, Base);
         DR = LargeNumberArithmetic::divideByLargeNumber(Base, modulus);
         Base = DR.remainder;
-        Exp = LargeNumberArithmetic::divideByLargeNumber(Exp, LargeNumber({2})).quotient;
+        LargeNumber tmp;
+        tmp.digits[0] = 2;
+        Exp = LargeNumberArithmetic::divideByLargeNumber(Exp, tmp).quotient;
     }
     return Result;
 }
